@@ -1,10 +1,9 @@
-
 "use client";
 
 import { GenerateOutfitOutput } from "@/ai/flows/generate-personalized-outfit-suggestions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ShoppingCart, Tag, Info, ShoppingBag } from "lucide-react";
+import { ExternalLink, ShoppingBag, Lightbulb, ArrowRight, Info } from "lucide-react";
 import Image from "next/image";
 
 interface OutfitResultsProps {
@@ -15,7 +14,7 @@ export function OutfitResults({ results }: OutfitResultsProps) {
   return (
     <div className="space-y-16 animate-fade-in-up pb-20">
       <div className="text-center space-y-6">
-        <h2 className="text-5xl md:text-7xl font-headline font-black text-primary tracking-tighter">THE VYXEN DROPS</h2>
+        <h2 className="text-5xl md:text-7xl font-headline font-black text-primary tracking-tighter uppercase">The Vyxen Drops</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto text-xl font-medium">
           Our AI engine just calculated your perfect looks. Secure the fit immediately.
         </p>
@@ -40,7 +39,7 @@ export function OutfitResults({ results }: OutfitResultsProps) {
               </div>
             </div>
             
-            <CardHeader className="p-8">
+            <CardHeader className="p-8 pb-4">
               <CardTitle className="text-3xl font-headline text-primary font-black">
                 {outfit.name}
               </CardTitle>
@@ -50,48 +49,34 @@ export function OutfitResults({ results }: OutfitResultsProps) {
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="px-8 pb-8 flex-1 space-y-8">
-              <div className="space-y-6">
+            <CardContent className="px-8 pb-8 flex-1 space-y-6">
+              <div className="space-y-4">
                 {outfit.items.map((item, itemIdx) => (
-                  <div key={itemIdx} className="border-t border-white/5 pt-6 first:border-0 first:pt-0">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-black mb-1">{item.type}</p>
-                        <h4 className="text-lg font-bold">{item.name}</h4>
-                        <div className="flex items-center gap-2 mt-2 text-sm font-bold text-muted-foreground">
-                           <Tag className="w-4 h-4 text-primary" />
-                           {item.price}
-                        </div>
-                      </div>
+                  <div key={itemIdx} className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 space-y-4 hover:bg-white/[0.05] transition-colors">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-lg font-bold text-white">{item.name}</h4>
+                      <span className="text-primary font-black tracking-tight">{item.price}</span>
                     </div>
                     
                     {/* Multi-store Buttons */}
                     <div className="flex flex-wrap gap-2">
-                      {item.links.amazon && (
-                        <Button variant="outline" size="sm" asChild className="h-8 text-[10px] glass rounded-full font-bold px-3">
-                          <a href={item.links.amazon} target="_blank" rel="noopener noreferrer">Amazon</a>
-                        </Button>
-                      )}
-                      {item.links.myntra && (
-                        <Button variant="outline" size="sm" asChild className="h-8 text-[10px] glass rounded-full font-bold px-3">
-                          <a href={item.links.myntra} target="_blank" rel="noopener noreferrer">Myntra</a>
-                        </Button>
-                      )}
-                      {item.links.ajio && (
-                        <Button variant="outline" size="sm" asChild className="h-8 text-[10px] glass rounded-full font-bold px-3">
-                          <a href={item.links.ajio} target="_blank" rel="noopener noreferrer">Ajio</a>
-                        </Button>
-                      )}
-                      {item.links.flipkart && (
-                        <Button variant="outline" size="sm" asChild className="h-8 text-[10px] glass rounded-full font-bold px-3">
-                          <a href={item.links.flipkart} target="_blank" rel="noopener noreferrer">Flipkart</a>
-                        </Button>
-                      )}
-                      {item.links.zara && (
-                        <Button variant="outline" size="sm" asChild className="h-8 text-[10px] glass rounded-full font-bold px-3">
-                          <a href={item.links.zara} target="_blank" rel="noopener noreferrer">Zara</a>
-                        </Button>
-                      )}
+                      {item.links.meesho && <PlatformButton href={item.links.meesho} label="Meesho" />}
+                      {item.links.amazon && <PlatformButton href={item.links.amazon} label="Amazon" />}
+                      {item.links.flipkart && <PlatformButton href={item.links.flipkart} label="Flipkart" />}
+                      {item.links.snapdeal && <PlatformButton href={item.links.snapdeal} label="Snapdeal" />}
+                      {item.links.vMart && <PlatformButton href={item.links.vMart} label="V-Mart" />}
+                      {item.links.bata && <PlatformButton href={item.links.bata} label="Bata" />}
+                      {item.links.myntra && <PlatformButton href={item.links.myntra} label="Myntra" />}
+                      {item.links.ajio && <PlatformButton href={item.links.ajio} label="Ajio" />}
+                      {item.links.zara && <PlatformButton href={item.links.zara} label="Zara" />}
+                      {item.links.hm && <PlatformButton href={item.links.hm} label="H&M" />}
+                      {item.links.nykaa && <PlatformButton href={item.links.nykaa} label="Nykaa" />}
+                      {item.links.tataCliq && <PlatformButton href={item.links.tataCliq} label="Tata Cliq" />}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium pt-1">
+                      <Lightbulb className="w-4 h-4 text-primary fill-primary/20" />
+                      {item.itemTip}
                     </div>
                   </div>
                 ))}
@@ -113,5 +98,21 @@ export function OutfitResults({ results }: OutfitResultsProps) {
         ))}
       </div>
     </div>
+  );
+}
+
+function PlatformButton({ href, label }: { href: string; label: string }) {
+  return (
+    <Button 
+      variant="outline" 
+      size="sm" 
+      asChild 
+      className="h-9 px-4 bg-white/5 border-white/10 hover:bg-primary/10 hover:border-primary/50 text-white hover:text-primary rounded-full text-xs font-bold transition-all group"
+    >
+      <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+        {label}
+        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+      </a>
+    </Button>
   );
 }

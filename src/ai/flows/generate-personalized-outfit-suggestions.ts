@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview VYXEN AI - Personalized outfit and visual generation engine.
@@ -8,7 +7,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateOutfitInputSchema = z.object({
   height: z.number().describe('User height in centimeters.'),
@@ -30,12 +28,16 @@ const AffiliateLinksSchema = z.object({
   tataCliq: z.string().url().optional(),
   hm: z.string().url().optional(),
   zara: z.string().url().optional(),
+  snapdeal: z.string().url().optional(),
+  vMart: z.string().url().optional(),
+  bata: z.string().url().optional(),
 });
 
 const OutfitItemSchema = z.object({
   type: z.string().describe('Item type (e.g., T-shirt, Jeans).'),
   name: z.string().describe('Descriptive name.'),
-  price: z.string().describe('Estimated price (e.g., ₹499).'),
+  price: z.string().describe('Estimated price or range (e.g., ₹199–₹399).'),
+  itemTip: z.string().describe('A specific styling or buying tip for this item (e.g., "Go a size up for comfort").'),
   links: AffiliateLinksSchema,
 });
 
@@ -43,7 +45,7 @@ const OutfitSchema = z.object({
   name: z.string().describe('Descriptive name (e.g., "Street Casual Fit").'),
   type: z.enum(['Budget fit', 'Trendy fit', 'Premium fit']),
   description: z.string().describe('Brief description.'),
-  styleTip: z.string().describe('Styling recommendation.'),
+  styleTip: z.string().describe('Overall styling recommendation for the full outfit.'),
   totalPrice: z.string().describe('Total estimated cost (e.g., ₹2797).'),
   items: z.array(OutfitItemSchema),
   imagePrompt: z.string().describe('Detailed prompt for generating a visual of this specific outfit.'),
@@ -70,12 +72,11 @@ User Profile:
 - Location: {{{location}}}
 
 Create 3 options:
-1. "Budget fit" - Prioritizing value (Meesho, Flipkart, Amazon).
+1. "Budget fit" - Prioritizing value (Meesho, Flipkart, Amazon, Snapdeal, V-Mart).
 2. "Trendy fit" - Prioritizing current fashion trends (Myntra, Ajio, H&M).
 3. "Premium fit" - Prioritizing quality and brands (Tata Cliq, Zara, Nykaa Fashion).
 
-For each item, provide realistic names, prices in INR, and valid search placeholder URLs for the relevant platforms. 
-Also, write a highly descriptive 'imagePrompt' that describes a realistic person wearing this exact outfit in a modern setting, which will be used to generate a visual.
+For each item, provide realistic names, prices/ranges in INR, a helpful 'itemTip', and valid search placeholder URLs for relevant platforms. 
 
 Example placeholder link: https://www.amazon.in/s?k=black+oversized+tshirt`
 });
@@ -91,11 +92,9 @@ const generatePersonalizedOutfitSuggestionsFlow = ai.defineFlow(
     outputSchema: GenerateOutfitOutputSchema
   },
   async (input) => {
-    // 1. Generate text suggestions
     const { output: textOutput } = await outfitTextPrompt(input);
     if (!textOutput) throw new Error('Failed to generate outfit suggestions.');
 
-    // 2. Generate images for each outfit in parallel
     const outfitsWithImages = await Promise.all(textOutput.outfits.map(async (outfit) => {
       try {
         const { media } = await ai.generate({
