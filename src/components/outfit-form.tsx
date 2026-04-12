@@ -22,19 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Sparkles, ArrowRight, Loader2, Zap } from "lucide-react";
 import { generatePersonalizedOutfitSuggestions, type GenerateOutfitOutput } from "@/ai/flows/generate-personalized-outfit-suggestions";
 
 const formSchema = z.object({
   height: z.coerce.number().min(50).max(250),
   weight: z.coerce.number().min(20).max(300),
-  genderStyle: z.string().min(1),
+  style: z.enum(['Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym']),
   occasion: z.string().min(1),
-  budget: z.coerce.number().min(500),
+  budgetRange: z.enum(['Under ₹1000', '₹1000–₹3000', 'Premium']),
   location: z.string().default("India"),
-  bodyType: z.string().optional(),
-  preferredColors: z.string().optional(), // We'll split this by comma
-  fitType: z.string().optional(),
 });
 
 interface OutfitFormProps {
@@ -49,22 +46,17 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
     defaultValues: {
       height: 175,
       weight: 70,
-      genderStyle: "Male, streetwear",
+      style: "Streetwear",
       occasion: "College",
-      budget: 5000,
+      budgetRange: "₹1000–₹3000",
       location: "India",
-      fitType: "Regular",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      const colors = values.preferredColors ? values.preferredColors.split(",").map(c => c.trim()) : [];
-      const result = await generatePersonalizedOutfitSuggestions({
-        ...values,
-        preferredColors: colors.length > 0 ? colors : undefined,
-      });
+      const result = await generatePersonalizedOutfitSuggestions(values);
       onResults(result);
     } catch (error) {
       console.error("Failed to generate outfit:", error);
@@ -75,16 +67,20 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-card border border-white/5 p-6 md:p-10 rounded-2xl shadow-2xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10 glass p-8 md:p-12 rounded-[2rem] shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity">
+          <Zap className="w-40 h-40 text-primary" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <FormField
             control={form.control}
             name="height"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Height (cm)</FormLabel>
+                <FormLabel className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Height (cm)</FormLabel>
                 <FormControl>
-                  <Input placeholder="175" {...field} />
+                  <Input placeholder="175" className="h-14 bg-white/5 border-white/10 text-lg rounded-xl focus:ring-primary" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -95,9 +91,9 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
             name="weight"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Weight (kg)</FormLabel>
+                <FormLabel className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Weight (kg)</FormLabel>
                 <FormControl>
-                  <Input placeholder="70" {...field} />
+                  <Input placeholder="70" className="h-14 bg-white/5 border-white/10 text-lg rounded-xl focus:ring-primary" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -105,22 +101,22 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
           />
           <FormField
             control={form.control}
-            name="genderStyle"
+            name="style"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Style Preference</FormLabel>
+                <FormLabel className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Style Vibe</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-14 bg-white/5 border-white/10 text-lg rounded-xl">
                       <SelectValue placeholder="Select style" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Male, streetwear">Male, Streetwear</SelectItem>
-                    <SelectItem value="Male, formal">Male, Formal</SelectItem>
-                    <SelectItem value="Female, casual">Female, Casual</SelectItem>
-                    <SelectItem value="Female, chic">Female, Chic</SelectItem>
-                    <SelectItem value="Non-binary, aesthetic">Non-binary, Aesthetic</SelectItem>
+                  <SelectContent className="glass">
+                    <SelectItem value="Streetwear">Streetwear</SelectItem>
+                    <SelectItem value="Minimal">Minimalist</SelectItem>
+                    <SelectItem value="Desi">Desi / Traditional</SelectItem>
+                    <SelectItem value="Formal">Formal</SelectItem>
+                    <SelectItem value="Gym">Gym / Athletic</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -132,20 +128,20 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
             name="occasion"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>The Occasion</FormLabel>
+                <FormLabel className="text-muted-foreground font-bold uppercase tracking-widest text-xs">The Occasion</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-14 bg-white/5 border-white/10 text-lg rounded-xl">
                       <SelectValue placeholder="Select occasion" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="glass">
                     <SelectItem value="College">College / Campus</SelectItem>
                     <SelectItem value="Work">Office / Work</SelectItem>
                     <SelectItem value="Party">Party / Clubbing</SelectItem>
-                    <SelectItem value="Wedding">Wedding / Traditional</SelectItem>
+                    <SelectItem value="Wedding">Wedding</SelectItem>
                     <SelectItem value="Date">Date Night</SelectItem>
-                    <SelectItem value="Gym">Gym / Workout</SelectItem>
+                    <SelectItem value="Gym">Gym</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -154,34 +150,20 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
           />
           <FormField
             control={form.control}
-            name="budget"
+            name="budgetRange"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Budget (₹)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="5000" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="fitType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Fit Preference</FormLabel>
+              <FormItem className="md:col-span-2">
+                <FormLabel className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Budget Range</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Fit type" />
+                    <SelectTrigger className="h-14 bg-white/5 border-white/10 text-lg rounded-xl">
+                      <SelectValue placeholder="Select budget" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Regular">Regular Fit</SelectItem>
-                    <SelectItem value="Slim">Slim Fit</SelectItem>
-                    <SelectItem value="Oversized">Oversized</SelectItem>
-                    <SelectItem value="Relaxed">Relaxed</SelectItem>
+                  <SelectContent className="glass">
+                    <SelectItem value="Under ₹1000">Budget Fit (Under ₹1000)</SelectItem>
+                    <SelectItem value="₹1000–₹3000">Trendy Fit (₹1000–₹3000)</SelectItem>
+                    <SelectItem value="Premium">Premium Fit</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -190,22 +172,22 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
           />
         </div>
 
-        <div className="pt-4">
+        <div className="pt-6">
           <Button 
             type="submit" 
             disabled={loading}
-            className="w-full h-12 bg-primary text-background font-bold hover:bg-primary/90 text-lg gap-2"
+            className="w-full h-16 bg-primary text-background font-black hover:bg-primary/90 text-xl gap-3 rounded-2xl gold-glow transition-all active:scale-95"
           >
             {loading ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Cooking your drip...
+                <Loader2 className="w-6 h-6 animate-spin" />
+                COOKING YOUR DRIP...
               </>
             ) : (
               <>
-                <Sparkles className="w-5 h-5" />
-                Get My Drip
-                <ArrowRight className="w-5 h-5 ml-auto" />
+                <Sparkles className="w-6 h-6 fill-current" />
+                VYXEN MY FIT
+                <ArrowRight className="w-6 h-6 ml-auto" />
               </>
             )}
           </Button>

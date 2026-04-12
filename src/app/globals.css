@@ -5,38 +5,38 @@
 
 @layer base {
   :root {
-    /* Base: Dark Charcoal/Black #191713 */
-    --background: 36 10% 8%;
-    --foreground: 40 10% 95%;
+    /* Base: Deep Black #0A0A0A */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
     
-    --card: 36 10% 12%;
-    --card-foreground: 40 10% 95%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
     
-    --popover: 36 10% 10%;
-    --popover-foreground: 40 10% 95%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 98%;
     
-    /* Primary: Gold #E6BB33 */
-    --primary: 46 77% 55%;
-    --primary-foreground: 36 10% 8%;
+    /* Primary: Vyxen Gold #D4AF37 */
+    --primary: 46 65% 52%;
+    --primary-foreground: 0 0% 4%;
     
-    --secondary: 36 10% 20%;
-    --secondary-foreground: 46 77% 55%;
+    --secondary: 280 70% 60%; /* Modern Purple */
+    --secondary-foreground: 0 0% 98%;
     
-    --muted: 36 5% 25%;
-    --muted-foreground: 40 5% 65%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
     
-    /* Accent: Deep Orange #D94C26 */
-    --accent: 13 70% 50%;
-    --accent-foreground: 40 10% 95%;
+    /* Accent: Neon Pink/Purple Gradient #FF00FF to #8000FF */
+    --accent: 300 100% 50%;
+    --accent-foreground: 0 0% 98%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 36 10% 20%;
-    --input: 36 10% 20%;
-    --ring: 46 77% 55%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 46 65% 52%;
     
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 }
 
@@ -45,16 +45,29 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground selection:bg-primary/30 selection:text-primary;
+    @apply bg-background text-foreground selection:bg-primary/30 selection:text-primary font-body antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline tracking-wide;
+    @apply font-headline tracking-tight;
   }
 }
 
-/* Custom scrollbar for premium feel */
+/* Glassmorphism utility */
+.glass {
+  @apply bg-white/5 backdrop-blur-lg border border-white/10;
+}
+
+.gold-glow {
+  box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.3);
+}
+
+.neon-glow {
+  box-shadow: 0 0 25px -5px hsl(var(--secondary) / 0.4);
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
   background: hsl(var(--background));
@@ -65,4 +78,14 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary));
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }

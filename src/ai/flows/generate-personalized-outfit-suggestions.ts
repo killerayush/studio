@@ -1,80 +1,88 @@
+
 'use server';
 /**
- * @fileOverview This file defines a Genkit flow for generating personalized outfit suggestions.
+ * @fileOverview VYXEN AI - Personalized outfit and visual generation engine.
  *
- * - generatePersonalizedOutfitSuggestions - A function that generates tailored outfit suggestions based on user preferences.
- * - GenerateOutfitInput - The input type for the generatePersonalizedOutfitSuggestions function.
- * - GenerateOutfitOutput - The return type for the generatePersonalizedOutfitSuggestions function.
+ * - generatePersonalizedOutfitSuggestions - Generates 3 fit options (Budget, Trendy, Premium) with full visual images.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateOutfitInputSchema = z.object({
   height: z.number().describe('User height in centimeters.'),
   weight: z.number().describe('User weight in kilograms.'),
-  genderStyle: z.string().describe('User gender and preferred style (e.g., "Male, streetwear", "Female, casual", "Non-binary, formal").'),
-  occasion: z.string().describe('The occasion for which the outfit is needed (e.g., "college", "party", "work", "wedding").'),
-  budget: z.number().describe('The maximum budget for the entire outfit in Indian Rupees (INR).'),
-  location: z.string().describe('The user\'s location, primarily for context on brands/affiliate links (e.g., "India").'),
-  bodyType: z.string().optional().describe('Optional: User body type (e.g., "athletic", "slim", "curvy").'),
-  preferredColors: z.array(z.string()).optional().describe('Optional: Array of preferred colors (e.g., ["black", "gold", "blue"]).'),
-  fitType: z.string().optional().describe('Optional: Preferred fit type (e.g., "slim", "oversized", "regular").')
+  style: z.enum(['Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym']).describe('User primary style preference.'),
+  occasion: z.string().describe('The occasion for which the outfit is needed.'),
+  budgetRange: z.enum(['Under ₹1000', '₹1000–₹3000', 'Premium']).describe('The budget range for the entire outfit.'),
+  location: z.string().default('India').describe('The user\'s location for brand context.'),
 });
 export type GenerateOutfitInput = z.infer<typeof GenerateOutfitInputSchema>;
 
+const AffiliateLinksSchema = z.object({
+  amazon: z.string().url().optional(),
+  myntra: z.string().url().optional(),
+  ajio: z.string().url().optional(),
+  flipkart: z.string().url().optional(),
+  meesho: z.string().url().optional(),
+  nykaa: z.string().url().optional(),
+  tataCliq: z.string().url().optional(),
+  hm: z.string().url().optional(),
+  zara: z.string().url().optional(),
+});
+
 const OutfitItemSchema = z.object({
-  type: z.string().describe('The type of clothing item (e.g., "t-shirt", "jeans", "shoes", "accessories").'),
-  name: z.string().describe('A descriptive name for the item (e.g., "Graphic Oversized Tee", "Slim Fit Dark Wash Jeans").'),
-  priceRange: z.string().describe('The estimated price range for the item in INR (e.g., "₹500 - ₹800").'),
-  amazonLink: z.string().url().describe('Placeholder affiliate link to Amazon India for the item. Example: https://www.amazon.in/s?k=mens+graphic+tshirt'),
-  myntraLink: z.string().url().describe('Placeholder affiliate link to Myntra for the item. Example: https://www.myntra.com/search?q=men%20tshirts'),
-  ajioLink: z.string().url().describe('Placeholder affiliate link to Ajio for the item. Example: https://www.ajio.com/s/men%20tshirts')
+  type: z.string().describe('Item type (e.g., T-shirt, Jeans).'),
+  name: z.string().describe('Descriptive name.'),
+  price: z.string().describe('Estimated price (e.g., ₹499).'),
+  links: AffiliateLinksSchema,
 });
 
 const OutfitSchema = z.object({
-  description: z.string().describe('A brief description of the outfit combination.'),
-  styleTips: z.string().describe('Style tips for wearing this outfit.'),
-  items: z.array(OutfitItemSchema).describe('An array of clothing items that make up the outfit.')
+  name: z.string().describe('Descriptive name (e.g., "Street Casual Fit").'),
+  type: z.enum(['Budget fit', 'Trendy fit', 'Premium fit']),
+  description: z.string().describe('Brief description.'),
+  styleTip: z.string().describe('Styling recommendation.'),
+  totalPrice: z.string().describe('Total estimated cost (e.g., ₹2797).'),
+  items: z.array(OutfitItemSchema),
+  imagePrompt: z.string().describe('Detailed prompt for generating a visual of this specific outfit.'),
 });
 
 const GenerateOutfitOutputSchema = z.object({
-  outfits: z.array(OutfitSchema).min(2).max(3).describe('An array of 2 to 3 tailored outfit suggestions.')
+  outfits: z.array(OutfitSchema.extend({
+    imageUrl: z.string().optional().describe('Data URI of the generated image.'),
+  })),
 });
 export type GenerateOutfitOutput = z.infer<typeof GenerateOutfitOutputSchema>;
+
+const outfitTextPrompt = ai.definePrompt({
+  name: 'outfitTextPrompt',
+  input: { schema: GenerateOutfitInputSchema },
+  output: { schema: z.object({ outfits: z.array(OutfitSchema) }) },
+  prompt: `You are VYXEN AI, a top-tier fashion consultant. Generate 3 distinct outfit combinations based on the user's profile.
+  
+User Profile:
+- Style: {{{style}}}
+- Occasion: {{{occasion}}}
+- Budget Preference: {{{budgetRange}}}
+- Dimensions: {{{height}}}cm, {{{weight}}}kg
+- Location: {{{location}}}
+
+Create 3 options:
+1. "Budget fit" - Prioritizing value (Meesho, Flipkart, Amazon).
+2. "Trendy fit" - Prioritizing current fashion trends (Myntra, Ajio, H&M).
+3. "Premium fit" - Prioritizing quality and brands (Tata Cliq, Zara, Nykaa Fashion).
+
+For each item, provide realistic names, prices in INR, and valid search placeholder URLs for the relevant platforms. 
+Also, write a highly descriptive 'imagePrompt' that describes a realistic person wearing this exact outfit in a modern setting, which will be used to generate a visual.
+
+Example placeholder link: https://www.amazon.in/s?k=black+oversized+tshirt`
+});
 
 export async function generatePersonalizedOutfitSuggestions(input: GenerateOutfitInput): Promise<GenerateOutfitOutput> {
   return generatePersonalizedOutfitSuggestionsFlow(input);
 }
-
-const generateOutfitPrompt = ai.definePrompt({
-  name: 'generateOutfitPrompt',
-  input: { schema: GenerateOutfitInputSchema },
-  output: { schema: GenerateOutfitOutputSchema },
-  prompt: `You are DripAdvisor AI, an expert fashion stylist. Your task is to suggest 2-3 tailored outfit combinations based on the user's preferences. For each outfit, provide a description, style tips, and a breakdown of items including type, name, price range, and placeholder affiliate links for Amazon India, Myntra, and Ajio. Ensure the output is a valid JSON object.
-
-User Profile:
-Height: {{{height}}} cm
-Weight: {{{weight}}} kg
-Style/Gender: {{{genderStyle}}}
-Occasion: {{{occasion}}}
-Budget: ₹{{{budget}}}
-Location: {{{location}}}
-
-{{#if bodyType}}Body Type: {{{bodyType}}}.{{/if}}
-{{#if preferredColors}}Preferred Colors: {{preferredColors}}.{{/if}}
-{{#if fitType}}Fit Type: {{{fitType}}}.{{/if}}
-
-Generate 2-3 distinct outfit combinations. For each item, create a plausible name, a realistic price range within the user's budget (in INR, e.g., '₹500 - ₹800'), and use placeholder links that are valid URLs but do not point to real products. The links should be search URLs on the respective platforms. For example:
-Amazon: https://www.amazon.in/s?k=GENERIC_PRODUCT_NAME
-Myntra: https://www.myntra.com/search?q=GENERIC_PRODUCT_NAME
-Ajio: https://www.ajio.com/search?text=GENERIC_PRODUCT_NAME
-
-Example of placeholder URL for a T-shirt: https://www.amazon.in/s?k=mens+graphic+tshirt
-
-Be creative and consider the user's preferences, making sure the entire outfit budget is respected.
-`
-});
 
 const generatePersonalizedOutfitSuggestionsFlow = ai.defineFlow(
   {
@@ -83,10 +91,28 @@ const generatePersonalizedOutfitSuggestionsFlow = ai.defineFlow(
     outputSchema: GenerateOutfitOutputSchema
   },
   async (input) => {
-    const { output } = await generateOutfitPrompt(input);
-    if (!output) {
-      throw new Error('Failed to generate outfit suggestions.');
-    }
-    return output;
+    // 1. Generate text suggestions
+    const { output: textOutput } = await outfitTextPrompt(input);
+    if (!textOutput) throw new Error('Failed to generate outfit suggestions.');
+
+    // 2. Generate images for each outfit in parallel
+    const outfitsWithImages = await Promise.all(textOutput.outfits.map(async (outfit) => {
+      try {
+        const { media } = await ai.generate({
+          model: 'googleai/imagen-4.0-fast-generate-001',
+          prompt: `A high-quality, professional fashion catalog photo of a person wearing the following outfit: ${outfit.imagePrompt}. High detail, cinematic lighting, modern background.`,
+        });
+
+        return {
+          ...outfit,
+          imageUrl: media?.url,
+        };
+      } catch (e) {
+        console.error('Image generation failed for outfit:', outfit.name, e);
+        return { ...outfit, imageUrl: `https://picsum.photos/seed/${outfit.name}/800/1000` };
+      }
+    }));
+
+    return { outfits: outfitsWithImages };
   }
 );
