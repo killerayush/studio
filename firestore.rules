@@ -1,0 +1,116 @@
+rules_version = '2';
+
+/**
+ * VYXEN FIRESTORE SECURITY RULES
+ *
+ * CORE PHILOSOPHY:
+ * This ruleset enforces a strict user-ownership model. Every piece of data—from user profiles 
+ * to AI-generated outfits and click tracking—is securely tied to a specific Firebase 
+ * Authentication UID. Access is strictly compartmentalized to ensure users can only 
+ * interact with their own data.
+ *
+ * DATA STRUCTURE:
+ * 1. /users/{userId} - Root profile for each user.
+ * 2. /users/{userId}/outfitRequests/{requestId} - Parameters sent to the AI engine.
+ * 3. /users/{userId}/outfitRequests/{requestId}/generatedOutfits/{outfitId} - Results from the AI.
+ * 4. /clicks/{clickId} - Top-level collection for tracking affiliate link engagement.
+ *
+ * KEY SECURITY DECISIONS:
+ * - Path-Based Authorization: Most data is nested under the user's UID path, providing 
+ *   natural segregation.
+ * - Denormalization for Performance: The 'userId' is explicitly stored inside documents 
+ *   to allow for "Authorization Independence," meaning rules can verify ownership 
+ *   without performing expensive get() calls to parent documents.
+ * - Prototyping Flexibility: While ownership is strictly enforced, the specific shape 
+ *   and types of content fields (like 'stylePreference' or 'imageUrl') are not 
+ *   validated, allowing for rapid frontend iteration.
+ * - Immutable Identity: Critical relational fields (like userId) are made immutable 
+ *   on update to prevent users from "transferring" data ownership.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- GLOBAL HELPER FUNCTIONS ---
+
+    /** @description Checks if the request is from an authenticated user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the authenticated user's UID matches the provided userId. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Checks if the user owns the existing document and it actually exists. */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    /** @description Validates that the userId in the data matches the auth UID. */
+    function isValidIdentity(data) {
+      return data.userId == request.auth.uid;
+    }
+
+    // --- COLLECTION RULES ---
+
+    /**
+     * @description Rules for user profile documents.
+     * @path /users/{userId}
+     * @allow Authenticated user (create) where document ID matches their UID.
+     * @deny Any user attempting to read or write a profile that isn't their own.
+     * @principle Enforces self-creation and strict ownership of personal profile data.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for outfit generation requests.
+     * @path /users/{userId}/outfitRequests/{requestId}
+     * @allow Authenticated owner (list) to see their history of requests.
+     * @deny Users attempting to inject a different userId into the request data.
+     * @principle Ensures requests are correctly attributed to the user in the path.
+     */
+    match /users/{userId}/outfitRequests/{requestId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidIdentity(request.resource.data);
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Rules for AI-generated results based on a specific request.
+       * @path /users/{userId}/outfitRequests/{requestId}/generatedOutfits/{outfitId}
+       * @allow Authenticated owner (get) to view their styled outfits.
+       * @deny Unauthenticated access or cross-user data access.
+       * @principle Deeply nested ownership verification via path-based wildcards.
+       */
+      match /generatedOutfits/{outfitId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidIdentity(request.resource.data);
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    /**
+     * @description Rules for affiliate link click tracking.
+     * @path /clicks/{clickId}
+     * @allow Any signed-in user (create) to record a click event for themselves.
+     * @deny Users attempting to list or read clicks belonging to other users.
+     * @principle Uses denormalized userId field to enforce ownership on a top-level collection.
+     */
+    match /clicks/{clickId} {
+      // List operations require the user to filter by their own UID for the rule to pass
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidIdentity(request.resource.data);
+      allow update: if isSignedIn() && resource != null && resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && resource != null && resource.data.userId == request.auth.uid;
+    }
+  }
+}

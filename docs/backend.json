@@ -1,0 +1,395 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile and personal preferences for outfit generation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, primarily for communication and identification, not for authentication.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's display name or nickname."
+        },
+        "heightCm": {
+          "type": "number",
+          "description": "User's height in centimeters."
+        },
+        "weightKg": {
+          "type": "number",
+          "description": "User's weight in kilograms."
+        },
+        "gender": {
+          "type": "string",
+          "description": "User's self-identified gender or general style orientation (e.g., 'male', 'female', 'unisex')."
+        },
+        "stylePreference": {
+          "type": "string",
+          "description": "User's primary style preference (e.g., 'Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym')."
+        },
+        "occasionPreference": {
+          "type": "string",
+          "description": "User's preferred occasion for outfit suggestions (e.g., 'college', 'work', 'party')."
+        },
+        "budgetRangePreference": {
+          "type": "string",
+          "description": "User's preferred budget range for outfits (e.g., 'Under ₹1000', '₹1000–₹3000', 'Premium')."
+        },
+        "bodyType": {
+          "type": "string",
+          "description": "User's body type (e.g., 'athletic', 'slim', 'curvy')."
+        },
+        "preferredColors": {
+          "type": "array",
+          "description": "An array of preferred colors for outfits.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fitType": {
+          "type": "string",
+          "description": "User's preferred fit type for clothing (e.g., 'slim', 'oversized', 'regular')."
+        },
+        "location": {
+          "type": "string",
+          "description": "User's geographic location, used to tailor brand and product suggestions (e.g., 'India')."
+        },
+        "isGuest": {
+          "type": "boolean",
+          "description": "Indicates if the user is currently interacting in guest mode without a full account."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "createdAt"
+      ]
+    },
+    "OutfitRequest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OutfitRequest",
+      "type": "object",
+      "description": "Stores the parameters for a user's specific outfit generation request.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OutfitRequest entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who made the request. (Relationship: UserProfile 1:N OutfitRequest)"
+        },
+        "heightCm": {
+          "type": "number",
+          "description": "Height in centimeters specified for this particular outfit request."
+        },
+        "weightKg": {
+          "type": "number",
+          "description": "Weight in kilograms specified for this particular outfit request."
+        },
+        "gender": {
+          "type": "string",
+          "description": "Gender or style preference specified for this particular outfit request."
+        },
+        "stylePreference": {
+          "type": "string",
+          "description": "Style preference specified for this particular outfit request (e.g., 'Streetwear', 'Minimal', 'Desi')."
+        },
+        "occasion": {
+          "type": "string",
+          "description": "Occasion for which the outfit is requested (e.g., 'college', 'work', 'party')."
+        },
+        "budgetRange": {
+          "type": "string",
+          "description": "Budget range for the requested outfit (e.g., 'Under ₹1000', '₹1000–₹3000', 'Premium')."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location context for the outfit request, used for localized brand suggestions (e.g., 'India')."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when the outfit request was made.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "heightCm",
+        "weightKg",
+        "gender",
+        "stylePreference",
+        "occasion",
+        "budgetRange",
+        "location",
+        "timestamp"
+      ]
+    },
+    "GeneratedOutfit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GeneratedOutfit",
+      "type": "object",
+      "description": "Stores the details of an AI-generated outfit, including image, items, and shopping links.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the GeneratedOutfit entity."
+        },
+        "requestId": {
+          "type": "string",
+          "description": "Reference to the OutfitRequest that generated this outfit. (Relationship: OutfitRequest 1:N GeneratedOutfit)"
+        },
+        "name": {
+          "type": "string",
+          "description": "A descriptive name for the outfit (e.g., 'Street Casual', 'Formal Evening')."
+        },
+        "type": {
+          "type": "string",
+          "description": "The category or style type of the generated outfit (e.g., 'Budget fit', 'Trendy fit', 'Premium fit')."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to the AI-generated full outfit visual image.",
+          "format": "uri"
+        },
+        "styleTip": {
+          "type": "string",
+          "description": "A brief styling tip or recommendation for the outfit."
+        },
+        "totalPrice": {
+          "type": "string",
+          "description": "The estimated total price for all items in the outfit, including currency symbol (e.g., '₹2797')."
+        },
+        "items": {
+          "type": "array",
+          "description": "An array of individual clothing items and accessories that constitute the outfit.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the outfit was generated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "requestId",
+        "name",
+        "type",
+        "imageUrl",
+        "totalPrice",
+        "items",
+        "createdAt"
+      ]
+    },
+    "OutfitItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OutfitItem",
+      "type": "object",
+      "description": "Represents a single clothing item or accessory within a generated outfit. This is typically embedded within a GeneratedOutfit entity.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The type of clothing item (e.g., 'T-shirt', 'Jeans', 'Shoes', 'Watch')."
+        },
+        "name": {
+          "type": "string",
+          "description": "A descriptive name for the item (e.g., 'Oversized Black T-shirt')."
+        },
+        "price": {
+          "type": "string",
+          "description": "The estimated price of the individual item, including currency symbol (e.g., '₹499')."
+        },
+        "links": {
+          "type": "array",
+          "description": "An array of affiliate links for the item across various platforms.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "name",
+        "price",
+        "links"
+      ]
+    },
+    "AffiliateLink": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AffiliateLink",
+      "type": "object",
+      "description": "Represents a single affiliate link for an outfit item.",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "The e-commerce platform for this link (e.g., 'amazon', 'myntra', 'ajio', 'flipkart', 'meesho', 'nykaaFashion', 'tataCliq', 'hM', 'zara')."
+        },
+        "url": {
+          "type": "string",
+          "description": "The affiliate URL for the product on this platform.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "platform",
+        "url"
+      ]
+    },
+    "ClickEvent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ClickEvent",
+      "type": "object",
+      "description": "Tracks user clicks on affiliate links for monetization and analytics.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ClickEvent entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who performed the click. (Relationship: UserProfile 1:N ClickEvent)"
+        },
+        "outfitId": {
+          "type": "string",
+          "description": "Reference to the GeneratedOutfit from which the item was clicked. (Relationship: GeneratedOutfit 1:N ClickEvent)"
+        },
+        "itemType": {
+          "type": "string",
+          "description": "The type of the item that was clicked (e.g., 'T-shirt', 'Shoes')."
+        },
+        "platform": {
+          "type": "string",
+          "description": "The e-commerce platform where the link was clicked (e.g., 'amazon', 'myntra')."
+        },
+        "productLink": {
+          "type": "string",
+          "description": "The actual affiliate URL that was clicked.",
+          "format": "uri"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when the click event occurred.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "outfitId",
+        "itemType",
+        "platform",
+        "productLink",
+        "timestamp"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profiles and preferences. Each document represents a single user and is secured by the user's UID. The `id` field within the document will be identical to `userId` in the path for consistency. This ensures private data ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/outfitRequests/{requestId}",
+        "definition": {
+          "entityName": "OutfitRequest",
+          "schema": {
+            "$ref": "#/backend/entities/OutfitRequest"
+          },
+          "description": "Stores individual outfit generation requests made by a user. Ownership is path-based. Includes denormalized `userId` field for authorization independence and simplified security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication UID of the user who made the request."
+            },
+            {
+              "name": "requestId",
+              "description": "The unique identifier for an outfit generation request."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/outfitRequests/{requestId}/generatedOutfits/{outfitId}",
+        "definition": {
+          "entityName": "GeneratedOutfit",
+          "schema": {
+            "$ref": "#/backend/entities/GeneratedOutfit"
+          },
+          "description": "Stores AI-generated outfits, including embedded `OutfitItem`s and `AffiliateLink`s. Each document includes the denormalized `userId` from the parent user for authorization independence, preventing `get()` calls in security rules. The `requestId` from the parent is also in the path for clear context.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication UID of the user who owns this generated outfit."
+            },
+            {
+              "name": "requestId",
+              "description": "The unique identifier of the outfit request that generated this outfit."
+            },
+            {
+              "name": "outfitId",
+              "description": "The unique identifier for this specific generated outfit."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/clicks/{clickId}",
+        "definition": {
+          "entityName": "ClickEvent",
+          "schema": {
+            "$ref": "#/backend/entities/ClickEvent"
+          },
+          "description": "Records user clicks on affiliate links for analytics and monetization tracking. The `userId` field is explicitly denormalized within the document for authorization independence, allowing direct ownership checks during creation and QAP-compliant listing.",
+          "params": [
+            {
+              "name": "clickId",
+              "description": "The unique identifier for a click event."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for VYXEN is designed with core principles of Authorization Independence, Structural Segregation, and consistent Access Modeling to ensure security, scalability, and debuggability. All user-specific data is nested under `/users/{userId}/...`, leveraging path-based ownership for simple and robust security rules. Each document in subcollections (e.g., `outfitRequests`, `generatedOutfits`) explicitly includes the `userId` field. This critical denormalization ensures Authorization Independence by eliminating the need for `get()` calls to parent documents in security rules. For example, a `GeneratedOutfit` document can verify `request.auth.uid == resource.data.userId` directly, preventing complex and insecure hierarchical authorization checks and enabling atomic operations. This design also inherently supports QAPs (Query-Authenticated Paths) as `list` operations for user-owned subcollections (e.g., `/users/{userId}/outfitRequests`, `/users/{userId}/outfitRequests/{requestId}/generatedOutfits`) can directly leverage the `{userId}` wildcard in the path, ensuring that only data belonging to `request.auth.uid` is retrieved, thus preventing rules from acting as filters. The `clicks` collection is segregated to handle analytical data with distinct access requirements (creatable by users, readable potentially by admins or via specific user queries).\n\nSpecifically:\n\n*   **UserProfile (`/users/{userId}`):** This is the root for all user-specific data. The `userId` in the path matches `request.auth.uid`, establishing clear ownership. The `id` field within the document will also store this `userId` for consistency and direct reference. This ensures only the authenticated user can access their profile.\n*   **OutfitRequest (`/users/{userId}/outfitRequests/{requestId}`):** Nested under the user, this collection stores individual outfit generation requests. The `userId` is present in the path and also explicitly stored in the document's `userId` field. This denormalization means rules can verify `request.auth.uid == request.resource.data.userId` without needing to retrieve the parent `/users/{userId}` document. A `list` query on `/users/{request.auth.uid}/outfitRequests` will inherently be secure as the path itself scopes the query to the authenticated user.\n*   **GeneratedOutfit (`/users/{userId}/outfitRequests/{requestId}/generatedOutfits/{outfitId}`):** These are generated outfits, embedded with `OutfitItem` and `AffiliateLink` details. Crucially, each `GeneratedOutfit` document *must* contain the `userId` field, denormalized from the parent user. This allows security rules to evaluate `request.auth.uid == resource.data.userId` directly on the `GeneratedOutfit` document itself, making it authorization independent. This structure also supports QAPs for listing outfits for a specific request or user.\n*   **ClickEvent (`/clicks/{clickId}`):** This collection is a top-level collection for tracking all user clicks. Each `ClickEvent` document includes the `userId` of the user who performed the click. This allows for independent creation by any authenticated user (including guests) with rules like `allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.userId;`. Listing or querying for specific user clicks is QAP-compliant as the `userId` field can be used in queries and checked by rules (`allow list: if request.auth.uid != null && request.auth.uid == resource.data.userId;`).\n\nThis robust structure minimizes rule complexity, enhances security by design, and ensures atomic operations are not hampered by authorization dependencies."
+  }
+}
