@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-fashion",
+      "description": "Stylish person in modern streetwear",
+      "imageUrl": "https://picsum.photos/seed/fashion1/1200/800",
+      "imageHint": "streetwear fashion"
+    },
+    {
+      "id": "casual-vibe",
+      "description": "Casual minimalist outfit layout",
+      "imageUrl": "https://picsum.photos/seed/style2/600/400",
+      "imageHint": "minimalist clothing"
+    },
+    {
+      "id": "premium-suit",
+      "description": "Premium formal wear detail",
+      "imageUrl": "https://picsum.photos/seed/formal3/600/400",
+      "imageHint": "formal suit"
+    },
+    {
+      "id": "accessories-flatlay",
+      "description": "Fashion accessories and shoes",
+      "imageUrl": "https://picsum.photos/seed/acc4/600/400",
+      "imageHint": "shoes accessories"
+    }
+  ]
 }
