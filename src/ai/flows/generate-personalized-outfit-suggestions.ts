@@ -2,19 +2,32 @@
 /**
  * @fileOverview VYXEN AI - Personalized outfit and visual generation engine.
  *
- * - generatePersonalizedOutfitSuggestions - Generates 3 fit options (Budget, Trendy, Premium) with full visual images.
+ * - generatePersonalizedOutfitSuggestions - Generates 3 distinct fit options (Budget, Trendy, Premium) with full visual images.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const GenerateOutfitInputSchema = z.object({
+  name: z.string().nullable().optional().describe('User display name.'),
+  gender: z.enum(['Male', 'Female', 'Non-binary']).default('Male').describe('User gender preference.'),
   height: z.number().describe('User height in centimeters.'),
   weight: z.number().describe('User weight in kilograms.'),
+  shoeSize: z.number().optional().describe('Shoe size in EU/IN.'),
+  chest: z.number().optional().describe('Chest measurement in inches.'),
+  waist: z.number().optional().describe('Waist measurement in inches.'),
+  hips: z.number().optional().describe('Hips measurement in inches.'),
+  inseam: z.number().optional().describe('Inseam measurement in inches.'),
+  city: z.string().nullable().optional().describe('User city.'),
+  climate: z.string().optional().describe('Local climate conditions.'),
+  lifestyle: z.string().optional().describe('User lifestyle (e.g., Student, Working Professional).'),
   style: z.enum(['Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym']).describe('User primary style preference.'),
+  preferredTopStyles: z.array(z.string()).optional().describe('Specific types of tops preferred by user.'),
+  preferredFootwear: z.array(z.string()).optional().describe('Specific types of footwear preferred by user.'),
   occasion: z.string().describe('The occasion for which the outfit is needed.'),
-  budgetRange: z.enum(['Under ₹1000', '₹1000–₹3000', 'Premium']).describe('The budget range for the entire outfit.'),
+  budgetRange: z.string().describe('The budget range for the entire outfit.'),
   location: z.string().default('India').describe('The user\'s location for brand context.'),
+  userId: z.string().nullable().optional().describe('Authenticated user ID.'),
 });
 export type GenerateOutfitInput = z.infer<typeof GenerateOutfitInputSchema>;
 
@@ -37,7 +50,7 @@ const OutfitItemSchema = z.object({
   type: z.string().describe('Item type (e.g., T-shirt, Jeans).'),
   name: z.string().describe('Descriptive name.'),
   price: z.string().describe('Estimated price or range (e.g., ₹199–₹399).'),
-  itemTip: z.string().describe('A specific styling or buying tip for this item (e.g., "Go a size up for comfort").'),
+  itemTip: z.string().describe('A specific styling or buying tip for this item.'),
   links: AffiliateLinksSchema,
 });
 
@@ -62,23 +75,33 @@ const outfitTextPrompt = ai.definePrompt({
   name: 'outfitTextPrompt',
   input: { schema: GenerateOutfitInputSchema },
   output: { schema: z.object({ outfits: z.array(OutfitSchema) }) },
-  prompt: `You are VYXEN AI, a top-tier fashion consultant. Generate 3 distinct outfit combinations based on the user's profile.
+  config: {
+    temperature: 0.9,
+  },
+  prompt: `You are VYXEN AI, a top-tier fashion consultant. Generate 3 distinct and UNIQUE outfit combinations.
   
 User Profile:
-- Style: {{{style}}}
-- Occasion: {{{occasion}}}
-- Budget Preference: {{{budgetRange}}}
+- Name: {{{name}}}
+- Gender: {{{gender}}}
 - Dimensions: {{{height}}}cm, {{{weight}}}kg
+- Style Preference: {{{style}}}
+- Lifestyle: {{{lifestyle}}}
+- Occasion: {{{occasion}}}
+- Budget: {{{budgetRange}}}
 - Location: {{{location}}}
 
-Create 3 options:
-1. "Budget fit" - Prioritizing value (Meesho, Flipkart, Amazon, Snapdeal, V-Mart).
-2. "Trendy fit" - Prioritizing current fashion trends (Myntra, Ajio, H&M).
-3. "Premium fit" - Prioritizing quality and brands (Tata Cliq, Zara, Nykaa Fashion).
+Seed: ${Date.now()}
 
-For each item, provide realistic names, prices/ranges in INR, a helpful 'itemTip', and valid search placeholder URLs for relevant platforms. 
+Create 3 UNIQUE options:
+1. "Budget fit" - Maximum value, using platforms like Meesho, Flipkart, Amazon.
+2. "Trendy fit" - Latest trends, using Myntra, Ajio, H&M.
+3. "Premium fit" - High-end quality, using Tata Cliq, Zara, Nykaa Fashion.
 
-Example placeholder link: https://www.amazon.in/s?k=black+oversized+tshirt`
+Rules:
+- Do NOT repeat common outfits. Be creative.
+- Provide realistic INR prices.
+- Include deep-link placeholders for all relevant platforms.
+- Ensure the outfits are tailored to the user's specific measurements and climate.`
 });
 
 export async function generatePersonalizedOutfitSuggestions(input: GenerateOutfitInput): Promise<GenerateOutfitOutput> {
@@ -99,7 +122,7 @@ const generatePersonalizedOutfitSuggestionsFlow = ai.defineFlow(
       try {
         const { media } = await ai.generate({
           model: 'googleai/imagen-4.0-fast-generate-001',
-          prompt: `A high-quality, professional fashion catalog photo of a person wearing the following outfit: ${outfit.imagePrompt}. High detail, cinematic lighting, modern background.`,
+          prompt: `A professional, cinematic fashion photography shot of a ${input.gender} wearing the following outfit: ${outfit.imagePrompt}. High detail, studio lighting, modern urban background.`,
         });
 
         return {
@@ -107,8 +130,8 @@ const generatePersonalizedOutfitSuggestionsFlow = ai.defineFlow(
           imageUrl: media?.url,
         };
       } catch (e) {
-        console.error('Image generation failed for outfit:', outfit.name, e);
-        return { ...outfit, imageUrl: `https://picsum.photos/seed/${outfit.name}/800/1000` };
+        console.error('Image generation failed:', e);
+        return { ...outfit, imageUrl: `https://picsum.photos/seed/${outfit.name}-${Date.now()}/800/1000` };
       }
     }));
 

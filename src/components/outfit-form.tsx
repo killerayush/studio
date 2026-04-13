@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -24,13 +23,16 @@ import {
 } from "@/components/ui/select";
 import { Sparkles, ArrowRight, Loader2, Zap } from "lucide-react";
 import { generatePersonalizedOutfitSuggestions, type GenerateOutfitOutput } from "@/ai/flows/generate-personalized-outfit-suggestions";
+import { useUser } from "@/firebase";
 
 const formSchema = z.object({
+  name: z.string().optional().nullable(),
+  gender: z.enum(['Male', 'Female', 'Non-binary']),
   height: z.coerce.number().min(50).max(250),
   weight: z.coerce.number().min(20).max(300),
   style: z.enum(['Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym']),
   occasion: z.string().min(1),
-  budgetRange: z.enum(['Under ₹1000', '₹1000–₹3000', 'Premium']),
+  budgetRange: z.string().min(1),
   location: z.string().default("India"),
 });
 
@@ -40,15 +42,18 @@ interface OutfitFormProps {
 
 export function OutfitForm({ onResults }: OutfitFormProps) {
   const [loading, setLoading] = useState(false);
+  const { user } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: user?.displayName || "",
+      gender: "Male",
       height: 175,
       weight: 70,
       style: "Streetwear",
       occasion: "College",
-      budgetRange: "₹1000–₹3000",
+      budgetRange: "Under ₹3000",
       location: "India",
     },
   });
@@ -56,7 +61,16 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      const result = await generatePersonalizedOutfitSuggestions(values);
+      // Ensure nullable fields are correctly passed as null if empty
+      const payload = {
+        ...values,
+        name: values.name || null,
+        city: null, // Placeholder for future city detection
+        userId: user?.uid || null,
+        preferredTopStyles: [],
+        preferredFootwear: [],
+      };
+      const result = await generatePersonalizedOutfitSuggestions(payload as any);
       onResults(result);
     } catch (error) {
       console.error("Failed to generate outfit:", error);
@@ -73,6 +87,29 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem className="md:col-span-2">
+                <FormLabel className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Identity</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-14 bg-white/5 border-white/10 text-lg rounded-xl">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="glass">
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Non-binary">Non-binary</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="height"
@@ -161,9 +198,9 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className="glass">
-                    <SelectItem value="Under ₹1000">Budget Fit (Under ₹1000)</SelectItem>
-                    <SelectItem value="₹1000–₹3000">Trendy Fit (₹1000–₹3000)</SelectItem>
-                    <SelectItem value="Premium">Premium Fit</SelectItem>
+                    <SelectItem value="Under ₹1500">Budget Fit (Under ₹1500)</SelectItem>
+                    <SelectItem value="Under ₹3000">Trendy Fit (Under ₹3000)</SelectItem>
+                    <SelectItem value="Under ₹5000">Premium Fit (Under ₹5000)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
