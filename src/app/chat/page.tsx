@@ -6,14 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send, Sparkles, User } from 'lucide-react';
-import { styleChat, type StyleChatInput, type StyleChatOutput } from '@/ai/flows/chat-flow';
+import { styleChat, type Message } from '@/ai/flows/chat-flow';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -33,14 +28,16 @@ export default function ChatPage() {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const previousMessages = messages; // Store state before update
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const result = await styleChat({ message: input });
+      // Pass the state before the current message as history
+      const result = await styleChat({ message: input, history: previousMessages });
       const assistantMessage: Message = { role: 'assistant', content: result.response };
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Chat error:', error);
       toast({
@@ -48,8 +45,8 @@ export default function ChatPage() {
         title: 'AI Coach Error',
         description: 'Could not get a response. Please try again.',
       });
-      // remove the user message if the AI fails
-      setMessages((prev) => prev.slice(0, prev.length - 1));
+      // On error, revert to the state before the user's message was added
+      setMessages(previousMessages);
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +57,7 @@ export default function ChatPage() {
     setMessages([
       {
         role: 'assistant',
-        content: "Hey there! I'm VYXEN, your personal AI Style Coach. Ask me anything about fashion, what to wear for an occasion, or how to improve your style.",
+        content: "Hey there! I'm VYXEN, your personal AI Style Coach and assistant. Ask me anything about fashion, or any other topic!",
       },
     ]);
   }, []);

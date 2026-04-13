@@ -10,10 +10,17 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const MessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+});
+
 const StyleChatInputSchema = z.object({
   message: z.string().describe("The user's message to the style coach."),
+  history: z.array(MessageSchema).optional().describe("The conversation history."),
 });
 export type StyleChatInput = z.infer<typeof StyleChatInputSchema>;
+export type Message = z.infer<typeof MessageSchema>;
 
 const StyleChatOutputSchema = z.object({
   response: z.string().describe("The AI style coach's response."),
@@ -28,11 +35,18 @@ const styleChatPrompt = ai.definePrompt({
   name: 'styleChatPrompt',
   input: {schema: StyleChatInputSchema},
   output: {schema: StyleChatOutputSchema},
-  prompt: `You are VYXEN AI, a friendly, expert style coach. Your goal is to have a natural conversation with the user, providing them with fashion advice, outfit suggestions, and style tips.
+  prompt: `You are VYXEN AI, a friendly, expert style coach and helpful general-purpose assistant. Your primary goal is to provide fashion advice, but you can also answer general questions directly and accurately.
 
 Keep your responses concise, helpful, and engaging.
 
-User's message:
+{{#if history}}
+This is the conversation history:
+{{#each history}}
+{{role}}: {{{content}}}
+{{/each}}
+{{/if}}
+
+Current user message:
 {{{message}}}
 `,
 });
