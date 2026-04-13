@@ -56,6 +56,54 @@ const fetchTrendingOutfitsPrompt = ai.definePrompt({
   `,
 });
 
+// Function to provide fallback data when AI fails
+function getFallbackTrends(): FetchTrendingOutfitsOutput {
+  return {
+    combinations: [
+      {
+        id: 'fallback-trend-1',
+        name: 'Monochrome City Vibe',
+        description: 'A classic black and white streetwear look that is timeless and always in style. Perfect for urban exploration.',
+        colorPalette: ['#000000', '#FFFFFF', '#808080'],
+        items: [
+          { type: 'Tops', name: 'Oversized Black Graphic Tee' },
+          { type: 'Bottoms', name: 'White Cargo Pants' },
+          { type: 'Footwear', name: 'Black & White High-Top Sneakers' },
+        ],
+        imageHint: 'monochrome streetwear',
+        imageUrl: 'https://picsum.photos/seed/fallback-trend-1/800/1000',
+      },
+      {
+        id: 'fallback-trend-2',
+        name: 'Earth-Tone Minimalist',
+        description: 'A clean and sophisticated look using earthy tones. Great for a smart-casual setting.',
+        colorPalette: ['#A0522D', '#F5DEB3', '#D2B48C'],
+        items: [
+          { type: 'Tops', name: 'Beige Knit Polo Shirt' },
+          { type: 'Bottoms', name: 'Brown Pleated Trousers' },
+          { type: 'Footwear', name: 'White Leather Sneakers' },
+        ],
+        imageHint: 'earth tone minimalist',
+        imageUrl: 'https://picsum.photos/seed/fallback-trend-2/800/1000',
+      },
+      {
+        id: 'fallback-trend-3',
+        name: 'Classic Denim Duo',
+        description: 'A rugged and reliable all-denim look that never goes out of fashion.',
+        colorPalette: ['#4682B4', '#1E90FF', '#F5F5F5'],
+        items: [
+          { type: 'Tops', name: 'Blue Denim Jacket' },
+          { type: 'Bottoms', name: 'Dark Wash Straight-Fit Jeans' },
+          { type: 'Footwear', name: 'Brown Leather Boots' },
+        ],
+        imageHint: 'denim on denim',
+        imageUrl: 'https://picsum.photos/seed/fallback-trend-3/800/1000',
+      },
+    ],
+  };
+}
+
+
 // This flow calls the LLM and then augments the result with image URLs
 const fetchTrendingOutfitsFlow = ai.defineFlow(
   {
@@ -63,17 +111,22 @@ const fetchTrendingOutfitsFlow = ai.defineFlow(
     outputSchema: FetchTrendingOutfitsOutputSchema,
   },
   async () => {
-    const { output } = await fetchTrendingOutfitsPrompt();
-    if (!output) {
-      throw new Error("Failed to generate trending outfits.");
-    }
-    
-    // Add placeholder image URLs to the output
-    const combinationsWithImages = output.combinations.map(combo => ({
-      ...combo,
-      imageUrl: `https://picsum.photos/seed/${combo.id}/800/1000`,
-    }));
+    try {
+      const { output } = await fetchTrendingOutfitsPrompt();
+      if (!output) {
+        throw new Error("Failed to generate trending outfits.");
+      }
+      
+      // Add placeholder image URLs to the output
+      const combinationsWithImages = output.combinations.map(combo => ({
+        ...combo,
+        imageUrl: `https://picsum.photos/seed/${combo.id}/800/1000`,
+      }));
 
-    return { combinations: combinationsWithImages };
+      return { combinations: combinationsWithImages };
+    } catch (error: any) {
+      console.warn('Trending outfits AI failed (Quota/Limit), serving fallback:', error.message);
+      return getFallbackTrends();
+    }
   }
 );
