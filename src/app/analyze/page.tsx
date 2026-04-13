@@ -18,6 +18,25 @@ export default function AnalyzePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const performAnalysis = async (imageDataUri: string) => {
+    setUploadedImage(imageDataUri);
+    setPageState('loading');
+    try {
+      const input: StyleAnalysisInput = { imageDataUri };
+      const result = await analyzeStyleFromImage(input);
+      setAnalysisResult(result);
+      setPageState('result');
+    } catch (error) {
+      console.error("Style analysis failed:", error);
+      toast({
+        variant: "destructive",
+        title: "AI Analysis Error",
+        description: "Could not analyze your style. Please try a different image.",
+      });
+      setPageState('upload'); // Go back to upload screen on error
+    }
+  };
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -33,25 +52,15 @@ export default function AnalyzePage() {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const imageDataUri = e.target?.result as string;
-        setUploadedImage(imageDataUri);
-        setPageState('loading');
-        
-        try {
-          const input: StyleAnalysisInput = { imageDataUri };
-          const result = await analyzeStyleFromImage(input);
-          setAnalysisResult(result);
-          setPageState('result');
-        } catch (error) {
-          console.error("Style analysis failed:", error);
-          toast({
-            variant: "destructive",
-            title: "AI Analysis Error",
-            description: "Could not analyze your style. Please try a different image.",
-          });
-          setPageState('upload'); // Go back to upload screen on error
-        }
+        await performAnalysis(imageDataUri);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (uploadedImage) {
+      await performAnalysis(uploadedImage);
     }
   };
 
@@ -88,7 +97,7 @@ export default function AnalyzePage() {
                     </Button>
                 </div>
                 {analysisResult && uploadedImage && (
-                    <StyleAnalysisResults results={analysisResult} userImage={uploadedImage} />
+                    <StyleAnalysisResults results={analysisResult} userImage={uploadedImage} onRetry={handleRetry} />
                 )}
             </>
         );

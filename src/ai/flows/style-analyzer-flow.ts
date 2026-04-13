@@ -38,6 +38,7 @@ const StyleAnalysisOutputSchema = z.object({
     shoes: z.array(z.string()),
     avoid: z.array(z.string()),
   }).describe('Category-based clothing recommendations.'),
+  isFallback: z.boolean().default(false).describe('Indicates if the analysis is a pre-curated fallback.'),
 });
 export type StyleAnalysisOutput = z.infer<typeof StyleAnalysisOutputSchema>;
 
@@ -71,6 +72,33 @@ Image to analyze: {{media url=imageDataUri}}
 `
 });
 
+function getFallbackAnalysis(): StyleAnalysisOutput {
+  return {
+    styleScore: 7.5,
+    bodyType: 'Athletic',
+    bestFit: 'Slim Fit',
+    avoidFit: 'Baggy or Oversized',
+    bestColors: ['Navy Blue', 'Olive Green', 'Charcoal Grey'],
+    avoidColors: ['Neon Yellow', 'Bright Orange'],
+    outfitFeedback: {
+      good: ['The fit of your top is great.', 'Solid color choice.'],
+      improve: ['Pants could be more tapered.', 'Consider adding an accessory.'],
+    },
+    recommendedOutfit: [
+      { type: 'Top', description: 'White Oxford Shirt' },
+      { type: 'Bottom', description: 'Dark Wash Slim-Fit Jeans' },
+      { type: 'Shoes', description: 'Brown Leather Boots' },
+    ],
+    clothesSuggestions: {
+      tops: ['Henleys', 'Fitted T-Shirts', 'Casual Shirts'],
+      bottoms: ['Chinos', 'Slim Jeans', 'Tailored Shorts'],
+      shoes: ['Minimalist Sneakers', 'Loafers', 'Desert Boots'],
+      avoid: ['Graphic Tees with large logos', 'Ripped Jeans'],
+    },
+    isFallback: true,
+  };
+}
+
 const analyzeStyleFlow = ai.defineFlow(
   {
     name: 'analyzeStyleFlow',
@@ -78,10 +106,15 @@ const analyzeStyleFlow = ai.defineFlow(
     outputSchema: StyleAnalysisOutputSchema,
   },
   async input => {
-    const {output} = await analyzeStylePrompt(input);
-    if (!output) {
-        throw new Error('Style analysis failed to produce an output.');
+    try {
+        const {output} = await analyzeStylePrompt(input);
+        if (!output) {
+            throw new Error('Style analysis failed to produce an output.');
+        }
+        return output;
+    } catch (error: any) {
+        console.warn('Style analysis failed (Quota/Limit), serving fallback:', error.message);
+        return getFallbackAnalysis();
     }
-    return output;
   }
 );

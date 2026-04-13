@@ -4,12 +4,13 @@ import Image from 'next/image';
 import { type StyleAnalysisOutput } from '@/ai/flows/style-analyzer-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, XCircle, ShoppingBag, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle, ShoppingBag, ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface StyleAnalysisResultsProps {
   results: StyleAnalysisOutput;
   userImage: string;
+  onRetry?: () => void;
 }
 
 const ResultCard = ({ title, children, className }: { title: string, children: React.ReactNode, className?: string }) => (
@@ -30,9 +31,30 @@ const ColorPill = ({ color, valid }: { color: string, valid: boolean }) => (
     </div>
 );
 
-export function StyleAnalysisResults({ results, userImage }: StyleAnalysisResultsProps) {
+export function StyleAnalysisResults({ results, userImage, onRetry }: StyleAnalysisResultsProps) {
   return (
     <div className="max-w-7xl mx-auto space-y-10 animate-fade-in-up">
+        {results.isFallback && onRetry && (
+            <div className="glass border-primary/20 bg-primary/5 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 gold-glow">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                <p className="font-bold text-white text-sm">VYXEN High Demand Mode</p>
+                <p className="text-muted-foreground text-xs font-medium">Showing a sample studio analysis due to high traffic.</p>
+                </div>
+            </div>
+            <Button 
+                onClick={onRetry} 
+                variant="outline" 
+                className="h-10 border-primary/30 hover:bg-primary/10 text-primary font-bold gap-2 text-xs uppercase tracking-widest"
+            >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Retry AI Analysis
+            </Button>
+            </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Left Column: Image + Score */}
             <div className="lg:col-span-1 space-y-10">
