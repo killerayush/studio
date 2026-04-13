@@ -4,13 +4,14 @@ import Image from 'next/image';
 import { type StyleAnalysisOutput } from '@/ai/flows/style-analyzer-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, XCircle, ShoppingBag, ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
+import { CheckCircle2, XCircle, ShoppingBag, ArrowRight, AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface StyleAnalysisResultsProps {
   results: StyleAnalysisOutput;
   userImage: string;
   onRetry?: () => void;
+  onGenerate: () => void;
 }
 
 const ResultCard = ({ title, children, className }: { title: string, children: React.ReactNode, className?: string }) => (
@@ -31,7 +32,7 @@ const ColorPill = ({ color, valid }: { color: string, valid: boolean }) => (
     </div>
 );
 
-export function StyleAnalysisResults({ results, userImage, onRetry }: StyleAnalysisResultsProps) {
+export function StyleAnalysisResults({ results, userImage, onRetry, onGenerate }: StyleAnalysisResultsProps) {
   return (
     <div className="max-w-7xl mx-auto space-y-10 animate-fade-in-up">
         {results.isFallback && onRetry && (
@@ -119,50 +120,21 @@ export function StyleAnalysisResults({ results, userImage, onRetry }: StyleAnaly
                     </div>
                 </ResultCard>
 
-                <ResultCard title="Recommended Outfit" className="border-primary/50 gold-glow">
-                    <div className="space-y-4">
-                        {results.recommendedOutfit.map(item => (
-                            <div key={item.type} className="bg-white/5 p-4 rounded-lg flex justify-between items-center">
-                                <span className="font-bold text-primary">{item.type}</span>
-                                <p className="text-white font-medium">{item.description}</p>
-                            </div>
-                        ))}
-                    </div>
-                     <div className="mt-6">
-                        <Button className="w-full h-14 bg-secondary hover:bg-secondary/80 text-white font-black rounded-xl gap-3 text-lg neon-glow">
-                            <ShoppingBag className="w-6 h-6" />
-                            SHOP THIS LOOK
-                            <ArrowRight className="w-5 h-5 ml-auto" />
-                        </Button>
-                    </div>
-                </ResultCard>
+                <Card className="glass border-primary/50 gold-glow p-8 text-center space-y-6">
+                    <h3 className="text-3xl font-headline font-bold text-white">Ready for the Next Step?</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                        Let's use this analysis to generate your perfect, AI-curated outfits. VYXEN will use your body type, color analysis, and feedback to build a wardrobe you'll love.
+                    </p>
+                    <Button 
+                        onClick={onGenerate}
+                        size="lg"
+                        className="h-16 px-10 w-full max-w-sm mx-auto bg-primary text-background font-black hover:bg-primary/90 text-xl rounded-full shadow-2xl shadow-primary/30 gold-glow group"
+                    >
+                         <Sparkles className="w-6 h-6 mr-3" />
+                         GENERATE MY OUTFITS
+                    </Button>
+                </Card>
 
-                <ResultCard title="Best Clothes For You">
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                             <h4 className="font-bold text-white mb-2">Tops</h4>
-                            <ul className="list-disc list-inside text-muted-foreground">
-                                {results.clothesSuggestions.tops.map(i => <li key={i}>{i}</li>)}
-                            </ul>
-                        </div>
-                         <div>
-                             <h4 className="font-bold text-white mb-2">Bottoms</h4>
-                            <ul className="list-disc list-inside text-muted-foreground">
-                                {results.clothesSuggestions.bottoms.map(i => <li key={i}>{i}</li>)}
-                            </ul>
-                        </div>
-                         <div>
-                             <h4 className="font-bold text-white mb-2">Shoes</h4>
-                            <ul className="list-disc list-inside text-muted-foreground">
-                                {results.clothesSuggestions.shoes.map(i => <li key={i}>{i}</li>)}
-                            </ul>
-                        </div>
-                     </div>
-                     <div className="mt-6 border-t border-white/10 pt-4">
-                         <h4 className="font-bold text-red-500 mb-2">Consider Avoiding</h4>
-                        <p className="text-muted-foreground text-sm">{results.clothesSuggestions.avoid.join(', ')}</p>
-                     </div>
-                </ResultCard>
                  <div className="text-center text-muted-foreground text-xs p-4">
                     <p>This analysis is generated by AI. Your image is processed for this analysis and is not stored or used for any other purpose.</p>
                     <button className="underline hover:text-primary mt-1">Delete this analysis and image</button>

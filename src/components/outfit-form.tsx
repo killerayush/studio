@@ -13,12 +13,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Sparkles, ArrowRight, Loader2, Flame, Wallet, Gem, GraduationCap, Briefcase, PartyPopper, Dumbbell, Home } from "lucide-react";
+import { Sparkles, ArrowRight, Loader2, Flame, Wallet, Gem, GraduationCap, Briefcase, PartyPopper, Dumbbell, Home, Info } from "lucide-react";
 import { generatePersonalizedOutfitSuggestions, type GenerateOutfitOutput, type GenerateOutfitInput } from "@/ai/flows/generate-personalized-outfit-suggestions";
+import { type StyleAnalysisOutput } from "@/ai/flows/style-analyzer-flow";
 import { useUser } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -50,6 +51,7 @@ const formSchema = z.object({
   lifestyle: z.string().optional(),
 
   location: z.string().default("India"),
+  styleAnalysis: z.string().optional(),
 });
 
 
@@ -57,6 +59,7 @@ interface OutfitFormProps {
   onResults: (results: GenerateOutfitOutput, input: GenerateOutfitInput) => void;
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  initialAnalysisData?: StyleAnalysisOutput | null;
 }
 
 const occasionOptions = [
@@ -101,7 +104,7 @@ const StyleCheckboxButton = ({ field, value, label, icon }: { field: any, value:
 };
 
 
-export function OutfitForm({ onResults, isLoading, setIsLoading }: OutfitFormProps) {
+export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysisData }: OutfitFormProps) {
   const { user } = useUser();
   const { toast } = useToast();
   const [showStyleDetails, setShowStyleDetails] = useState(false);
@@ -126,8 +129,15 @@ export function OutfitForm({ onResults, isLoading, setIsLoading }: OutfitFormPro
       inseam: 30,
       city: "",
       lifestyle: "Student",
+      styleAnalysis: "",
     },
   });
+
+  useEffect(() => {
+    if (initialAnalysisData) {
+      form.setValue('styleAnalysis', JSON.stringify(initialAnalysisData));
+    }
+  }, [initialAnalysisData, form]);
 
   const gender = form.watch('gender');
 
@@ -155,6 +165,13 @@ export function OutfitForm({ onResults, isLoading, setIsLoading }: OutfitFormPro
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10 glass p-8 md:p-12 rounded-[2rem] shadow-2xl relative overflow-hidden group">
         
+        {initialAnalysisData && (
+          <div className="bg-primary/10 border border-primary/20 text-primary p-4 rounded-xl flex items-center gap-3">
+            <Info className="w-5 h-5 shrink-0"/>
+            <p className="text-sm font-semibold">Using your Style Analysis to generate enhanced recommendations! ✨</p>
+          </div>
+        )}
+
         <div className="space-y-4">
             <FormLabel className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-[10px]">THE BASICS</FormLabel>
             <FormField

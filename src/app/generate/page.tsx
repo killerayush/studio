@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Navbar } from "@/components/navbar";
 import { OutfitForm } from "@/components/outfit-form";
 import { OutfitResults } from "@/components/outfit-results";
 import { type GenerateOutfitOutput, type GenerateOutfitInput, generatePersonalizedOutfitSuggestions } from "@/ai/flows/generate-personalized-outfit-suggestions";
+import { type StyleAnalysisOutput } from "@/ai/flows/style-analyzer-flow";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Loader2 } from "lucide-react";
@@ -14,8 +15,23 @@ export default function GeneratePage() {
   const [results, setResults] = useState<GenerateOutfitOutput | null>(null);
   const [lastInput, setLastInput] = useState<GenerateOutfitInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisData, setAnalysisData] = useState<StyleAnalysisOutput | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check session storage for analysis data when component mounts
+    const storedData = sessionStorage.getItem('styleAnalysisData');
+    if (storedData) {
+      try {
+        setAnalysisData(JSON.parse(storedData));
+        // Clear the data so it's not reused on a normal visit to this page
+        sessionStorage.removeItem('styleAnalysisData');
+      } catch (error) {
+        console.error("Failed to parse style analysis data from session storage:", error);
+      }
+    }
+  }, []);
 
   const handleResults = (res: GenerateOutfitOutput, input: GenerateOutfitInput) => {
     setResults(res);
@@ -48,6 +64,11 @@ export default function GeneratePage() {
     }
   };
 
+  const handleBackToForm = () => {
+    setResults(null);
+    setAnalysisData(null); // Also clear analysis data if going back
+  };
+
 
   return (
     <div className="min-h-screen pb-20 relative">
@@ -68,14 +89,19 @@ export default function GeneratePage() {
                 more info = better drip
               </p>
             </div>
-            <OutfitForm onResults={handleResults} setIsLoading={setIsLoading} isLoading={isLoading} />
+            <OutfitForm 
+              onResults={handleResults} 
+              setIsLoading={setIsLoading} 
+              isLoading={isLoading} 
+              initialAnalysisData={analysisData}
+            />
           </div>
         ) : (
           <div className="space-y-8" ref={resultsRef}>
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               <Button 
                 variant="ghost" 
-                onClick={() => setResults(null)}
+                onClick={handleBackToForm}
                 className="group hover:bg-transparent px-0 text-muted-foreground hover:text-primary font-bold uppercase tracking-widest text-xs"
               >
                 <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform" />

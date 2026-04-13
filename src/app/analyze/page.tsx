@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useRef, ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Camera, Sparkles, ArrowLeft } from 'lucide-react';
-import Image from 'next/image';
+import { Loader2, Upload, Camera, ArrowLeft } from 'lucide-react';
 import { analyzeStyleFromImage, type StyleAnalysisOutput, type StyleAnalysisInput } from '@/ai/flows/style-analyzer-flow';
 import { StyleAnalysisResults } from '@/components/style-analysis-results';
 
@@ -17,6 +17,7 @@ export default function AnalyzePage() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const performAnalysis = async (imageDataUri: string) => {
     setUploadedImage(imageDataUri);
@@ -73,6 +74,13 @@ export default function AnalyzePage() {
     }
   };
 
+  const handleGenerateFromAnalysis = () => {
+    if (analysisResult) {
+      sessionStorage.setItem('styleAnalysisData', JSON.stringify(analysisResult));
+      router.push('/generate');
+    }
+  };
+
   const renderContent = () => {
     switch (pageState) {
       case 'loading':
@@ -97,7 +105,12 @@ export default function AnalyzePage() {
                     </Button>
                 </div>
                 {analysisResult && uploadedImage && (
-                    <StyleAnalysisResults results={analysisResult} userImage={uploadedImage} onRetry={handleRetry} />
+                    <StyleAnalysisResults 
+                      results={analysisResult} 
+                      userImage={uploadedImage} 
+                      onRetry={handleRetry}
+                      onGenerate={handleGenerateFromAnalysis}
+                    />
                 )}
             </>
         );

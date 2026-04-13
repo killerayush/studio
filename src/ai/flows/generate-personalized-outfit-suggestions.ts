@@ -36,6 +36,9 @@ const GenerateOutfitInputSchema = z.object({
   budgetRange: z.enum(['Under ₹1,500', 'Under ₹3,000', 'Under ₹5,000']).describe('The budget range for the entire outfit.'),
   location: z.string().default('India').describe('The user\'s location for brand context.'),
   userId: z.string().nullable().optional().describe('Authenticated user ID.'),
+
+  // Optional analysis input
+  styleAnalysis: z.string().optional().describe('A JSON string of a detailed style analysis performed on the user. This should heavily influence the outfit generation, taking precedence over other preferences if there is a conflict.'),
 });
 
 export type GenerateOutfitInput = z.infer<typeof GenerateOutfitInputSchema>;
@@ -89,6 +92,12 @@ const outfitTextPrompt = ai.definePrompt({
     temperature: 0.9,
   },
   prompt: `You are VYXEN AI, a top-tier fashion consultant. Generate 3 COMPLETELY DIFFERENT outfits based on the user's detailed profile.
+
+{{#if styleAnalysis}}
+CRITICAL: The following is a professional style analysis for the user. Use this as the primary guide for your suggestions, overriding other preferences if they conflict.
+ANALYSIS:
+{{{styleAnalysis}}}
+{{/if}}
 
 User Profile:
 - Name: {{{name}}}
