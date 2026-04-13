@@ -19,6 +19,7 @@ export function Navbar() {
     { href: '/', label: 'HOME' },
     { href: '/generate', label: 'OUTFIT BUILDER' },
     { href: '/analyze',label: 'MIRROR AI' },
+    { href: '/explore', label: 'TRENDS' },
     { href: '/history', label: 'HISTORY' },
     { href: '/profile', label: 'PROFILE' },
   ];

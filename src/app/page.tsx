@@ -39,8 +39,8 @@ export default function Home() {
                 GET MY FIT <Rocket className="ml-3 w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="h-16 px-10 border-white/10 hover:bg-white/5 rounded-full text-lg glass font-bold">
-              Explore Trends
+            <Button asChild variant="outline" size="lg" className="h-16 px-10 border-white/10 hover:bg-white/5 rounded-full text-lg glass font-bold">
+              <Link href="/explore">Explore Trends</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-16 px-10 border-secondary/50 hover:bg-secondary/10 rounded-full text-lg glass font-bold text-secondary neon-glow">
               <Link href="/analyze" className="flex items-center gap-2">
