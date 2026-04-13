@@ -303,6 +303,45 @@
         "productLink",
         "timestamp"
       ]
+    },
+    "Feedback": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Feedback",
+      "type": "object",
+      "description": "Represents user-submitted feedback for the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Feedback entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated user who submitted the feedback, or 'anonymous'."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the user providing feedback (optional)."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email of the user providing feedback (optional).",
+          "format": "email"
+        },
+        "feedback": {
+          "type": "string",
+          "description": "The main content of the feedback."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the feedback was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "feedback",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -388,8 +427,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/feedback/{feedbackId}",
+        "definition": {
+          "entityName": "Feedback",
+          "schema": {
+            "$ref": "#/backend/entities/Feedback"
+          },
+          "description": "Stores user-submitted feedback. This collection is write-only for users to ensure privacy.",
+          "params": [
+            {
+              "name": "feedbackId",
+              "description": "The unique identifier for a feedback submission."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure for VYXEN is designed with core principles of Authorization Independence, Structural Segregation, and consistent Access Modeling to ensure security, scalability, and debuggability. All user-specific data is nested under `/users/{userId}/...`, leveraging path-based ownership for simple and robust security rules. Each document in subcollections (e.g., `outfitRequests`, `generatedOutfits`) explicitly includes the `userId` field. This critical denormalization ensures Authorization Independence by eliminating the need for `get()` calls to parent documents in security rules. For example, a `GeneratedOutfit` document can verify `request.auth.uid == resource.data.userId` directly, preventing complex and insecure hierarchical authorization checks and enabling atomic operations. This design also inherently supports QAPs (Query-Authenticated Paths) as `list` operations for user-owned subcollections (e.g., `/users/{userId}/outfitRequests`, `/users/{userId}/outfitRequests/{requestId}/generatedOutfits`) can directly leverage the `{userId}` wildcard in the path, ensuring that only data belonging to `request.auth.uid` is retrieved, thus preventing rules from acting as filters. The `clicks` collection is segregated to handle analytical data with distinct access requirements (creatable by users, readable potentially by admins or via specific user queries).\n\nSpecifically:\n\n*   **UserProfile (`/users/{userId}`):** This is the root for all user-specific data. The `userId` in the path matches `request.auth.uid`, establishing clear ownership. The `id` field within the document will also store this `userId` for consistency and direct reference. This ensures only the authenticated user can access their profile.\n*   **OutfitRequest (`/users/{userId}/outfitRequests/{requestId}`):** Nested under the user, this collection stores individual outfit generation requests. The `userId` is present in the path and also explicitly stored in the document's `userId` field. This denormalization means rules can verify `request.auth.uid == request.resource.data.userId` without needing to retrieve the parent `/users/{userId}` document. A `list` query on `/users/{request.auth.uid}/outfitRequests` will inherently be secure as the path itself scopes the query to the authenticated user.\n*   **GeneratedOutfit (`/users/{userId}/outfitRequests/{requestId}/generatedOutfits/{outfitId}`):** These are generated outfits, embedded with `OutfitItem` and `AffiliateLink` details. Crucially, each `GeneratedOutfit` document *must* contain the `userId` field, denormalized from the parent user. This allows security rules to evaluate `request.auth.uid == resource.data.userId` directly on the `GeneratedOutfit` document itself, making it authorization independent. This structure also supports QAPs for listing outfits for a specific request or user.\n*   **ClickEvent (`/clicks/{clickId}`):** This collection is a top-level collection for tracking all user clicks. Each `ClickEvent` document includes the `userId` of the user who performed the click. This allows for independent creation by any authenticated user (including guests) with rules like `allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.userId;`. Listing or querying for specific user clicks is QAP-compliant as the `userId` field can be used in queries and checked by rules (`allow list: if request.auth.uid != null && request.auth.uid == resource.data.userId;`).\n\nThis robust structure minimizes rule complexity, enhances security by design, and ensures atomic operations are not hampered by authorization dependencies."
+    "reasoning": "The Firestore structure for VYXEN is designed with core principles of Authorization Independence, Structural Segregation, and consistent Access Modeling to ensure security, scalability, and debuggability. All user-specific data is nested under `/users/{userId}/...`, leveraging path-based ownership for simple and robust security rules. Each document in subcollections (e.g., `outfitRequests`, `generatedOutfits`) explicitly includes the `userId` field. This critical denormalization ensures Authorization Independence by eliminating the need for `get()` calls to parent documents in security rules. For example, a `GeneratedOutfit` document can verify `request.auth.uid == resource.data.userId` directly, preventing complex and insecure hierarchical authorization checks and enabling atomic operations. This design also inherently supports QAPs (Query-Authenticated Paths) as `list` operations for user-owned subcollections (e.g., `/users/{userId}/outfitRequests`, `/users/{userId}/outfitRequests/{requestId}/generatedOutfits`) can directly leverage the `{userId}` wildcard in the path, ensuring that only data belonging to `request.auth.uid` is retrieved, thus preventing rules from acting as filters. The `clicks` collection is segregated to handle analytical data with distinct access requirements (creatable by users, readable potentially by admins or via specific user queries).\n\nSpecifically:\n\n*   **UserProfile (`/users/{userId}`):** This is the root for all user-specific data. The `userId` in the path matches `request.auth.uid`, establishing clear ownership. The `id` field within the document will also store this `userId` for consistency and direct reference. This ensures only the authenticated user can access their profile.\n*   **OutfitRequest (`/users/{userId}/outfitRequests/{requestId}`):** Nested under the user, this collection stores individual outfit generation requests. The `userId` is present in the path and also explicitly stored in the document's `userId` field. This denormalization means rules can verify `request.auth.uid == request.resource.data.userId` without needing to retrieve the parent `/users/{userId}` document. A `list` query on `/users/{request.auth.uid}/outfitRequests` will inherently be secure as the path itself scopes the query to the authenticated user.\n*   **GeneratedOutfit (`/users/{userId}/outfitRequests/{requestId}/generatedOutfits/{outfitId}`):** These are generated outfits, embedded with `OutfitItem` and `AffiliateLink` details. Crucially, each `GeneratedOutfit` document *must* contain the `userId` field, denormalized from the parent user. This allows security rules to evaluate `request.auth.uid == resource.data.userId` directly on the `GeneratedOutfit` document itself, making it authorization independent. This structure also supports QAPs for listing outfits for a specific request or user.\n*   **ClickEvent (`/clicks/{clickId}`):** This collection is a top-level collection for tracking all user clicks. Each `ClickEvent` document includes the `userId` of the user who performed the click. This allows for independent creation by any authenticated user (including guests) with rules like `allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.userId;`. Listing or querying for specific user clicks is QAP-compliant as the `userId` field can be used in queries and checked by rules (`allow list: if request.auth.uid != null && request.auth.uid == resource.data.userId;`).\n*   **Feedback (`/feedback/{feedbackId}`):** A public-write collection for all users (authenticated or anonymous) to submit feedback. It is read-only from the client-side to protect user privacy. Data can be viewed in the Firebase Console."
   }
 }

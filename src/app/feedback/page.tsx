@@ -12,6 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useFirestore, useUser } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const feedbackFormSchema = z.object({
   name: z.string().optional(),
@@ -24,6 +26,8 @@ type FeedbackFormValues = z.infer<typeof feedbackFormSchema>;
 export default function FeedbackPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const firestore = useFirestore();
+  const { user } = useUser();
 
   const form = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackFormSchema),
@@ -36,17 +40,40 @@ export default function FeedbackPage() {
 
   const onSubmit = async (data: FeedbackFormValues) => {
     setIsLoading(true);
-    console.log('Feedback submitted:', data);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!firestore) {
+      toast({
+        variant: "destructive",
+        title: "Database Error",
+        description: "Could not connect to the database. Please try again later.",
+      });
+      setIsLoading(false);
+      return;
+    }
 
-    setIsLoading(false);
-    toast({
-      title: "Feedback Sent! 🚀",
-      description: "Thank you for helping us improve VYXEN.",
-    });
-    form.reset();
+    try {
+      const feedbackCollection = collection(firestore, 'feedback');
+      await addDoc(feedbackCollection, {
+        ...data,
+        userId: user?.uid || 'anonymous',
+        createdAt: serverTimestamp(),
+      });
+
+      toast({
+        title: "Feedback Sent! 🚀",
+        description: "Thank you for helping us improve VYXEN.",
+      });
+      form.reset();
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -116,7 +143,7 @@ export default function FeedbackPage() {
 
                         <Button 
                             type="submit" 
-                            disabled={isLoading}
+                            disabled={isLoading || !firestore}
                             className="w-full h-16 bg-primary text-background font-black hover:bg-primary/90 text-xl rounded-full shadow-2xl shadow-primary/30 gold-glow group"
                         >
                             {isLoading ? (
@@ -136,3 +163,4 @@ export default function FeedbackPage() {
     </div>
   );
 }
+

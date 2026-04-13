@@ -14,6 +14,7 @@ rules_version = '2';
  * 2. /users/{userId}/outfitRequests/{requestId} - Parameters sent to the AI engine.
  * 3. /users/{userId}/outfitRequests/{requestId}/generatedOutfits/{outfitId} - Results from the AI.
  * 4. /clicks/{clickId} - Top-level collection for tracking affiliate link engagement.
+ * 5. /feedback/{feedbackId} - Collection for user-submitted feedback.
  *
  * KEY SECURITY DECISIONS:
  * - Path-Based Authorization: Most data is nested under the user's UID path, providing 
@@ -21,6 +22,8 @@ rules_version = '2';
  * - Denormalization for Performance: The 'userId' is explicitly stored inside documents 
  *   to allow for "Authorization Independence," meaning rules can verify ownership 
  *   without performing expensive get() calls to parent documents.
+ * - Public Write for Feedback: The /feedback collection is open for creation by any user
+ *   to lower the barrier for submitting feedback, but is not readable from the client.
  * - Prototyping Flexibility: While ownership is strictly enforced, the specific shape 
  *   and types of content fields (like 'stylePreference' or 'imageUrl') are not 
  *   validated, allowing for rapid frontend iteration.
@@ -111,6 +114,18 @@ service cloud.firestore {
       allow create: if isSignedIn() && isValidIdentity(request.resource.data);
       allow update: if isSignedIn() && resource != null && resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && resource != null && resource.data.userId == request.auth.uid;
+    }
+    
+    /**
+     * @description Rules for user-submitted feedback.
+     * @path /feedback/{feedbackId}
+     * @allow Any user (create) to submit feedback. The content must not be empty.
+     * @deny Reading, updating, or deleting feedback from the client to protect privacy.
+     * @principle Enables a low-friction way to collect user feedback while keeping it private.
+     */
+    match /feedback/{feedbackId} {
+      allow create: if request.resource.data.feedback is string && request.resource.data.feedback.size() > 0;
+      allow read, write: if false; // No one can read or update/delete from the client
     }
   }
 }
