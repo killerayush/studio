@@ -94,28 +94,31 @@ const lifestyleOptions = [
 
 const StyleCheckboxButton = ({ field, value, label, icon }: { field: any, value: string, label: string, icon: string }) => {
     const isChecked = field.value?.includes(value);
+    const id = `checkbox-${field.name}-${value}`;
     return (
-        <FormItem 
-             onClick={() => {
-                const newValue = isChecked
-                    ? field.value.filter((v: string) => v !== value)
-                    : [...(field.value || []), value];
-                field.onChange(newValue);
-            }}
-             className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition-all text-sm font-semibold",
-                isChecked ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50"
-            )}
-        >
-            <FormControl>
-                <Checkbox
-                    checked={isChecked}
-                    className="hidden"
-                />
-            </FormControl>
-            <span className="text-lg">{icon}</span>
-            <FormLabel className="!m-0 cursor-pointer">{label}</FormLabel>
-        </FormItem>
+        <div key={id}>
+            <Checkbox
+                id={id}
+                checked={isChecked}
+                onCheckedChange={(checked) => {
+                    const newValue = checked
+                        ? [...(field.value || []), value]
+                        : field.value.filter((v: string) => v !== value);
+                    field.onChange(newValue);
+                }}
+                className="hidden"
+            />
+            <Label
+                 htmlFor={id}
+                 className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition-all text-sm font-semibold",
+                    isChecked ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50"
+                )}
+            >
+                <span className="text-lg">{icon}</span>
+                <span className="!m-0 cursor-pointer">{label}</span>
+            </Label>
+        </div>
     );
 };
 
