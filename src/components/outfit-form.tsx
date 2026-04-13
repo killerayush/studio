@@ -67,23 +67,11 @@ const occasionOptions = [
     { value: 'Home', label: 'Home', icon: <Home className="w-8 h-8" />, image: 'https://picsum.photos/seed/home/400/500' },
 ];
 
-const BudgetCard = ({ field, value, title, icon, price, brands, tagline, selectedValue }: { field: any, value: string, title: string, icon: React.ReactNode, price: string, brands: string, tagline: string, selectedValue: string }) => (
-    <div
-        onClick={() => field.onChange(value)}
-        className={cn(
-            "relative p-6 rounded-2xl border-2 bg-black/20 transition-all cursor-pointer",
-            selectedValue === value ? "border-primary gold-glow" : "border-muted/50 hover:border-primary/50"
-        )}
-    >
-        <div className="flex flex-col items-center text-center space-y-3">
-            {icon}
-            <h3 className="font-bold text-lg text-white">{title}</h3>
-            <p className="font-semibold text-muted-foreground">{price}</p>
-            <p className="text-xs text-muted-foreground">{brands}</p>
-            <p className="text-xs text-primary font-mono pt-2 mt-2 border-t border-muted/20 w-full">{tagline}</p>
-        </div>
-    </div>
-);
+const budgetOptions = [
+    { value: "Under ₹1,500", title: "Budget Drip", icon: <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center"><Wallet className="w-6 h-6 text-green-400" /></div>, price: "Under ₹1,500", brands: "Meesho · Flipkart · Glowroad", tagline: "// look fly, spend less" },
+    { value: "Under ₹3,000", title: "Mid-range", icon: <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><Flame className="w-6 h-6 text-orange-400" /></div>, price: "Under ₹3,000", brands: "Myntra · Ajio · H&M · Newme", tagline: "// sweet spot · most picks here" },
+    { value: "Under ₹5,000", title: "Premium", icon: <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center"><Gem className="w-6 h-6 text-purple-400" /></div>, price: "Under ₹5,000", brands: "Zara · Mango · Nike · Snitch", tagline: "// quality fits · long wear" }
+];
 
 const StyleCheckboxButton = ({ field, value, label, icon }: { field: any, value: string, label: string, icon: string }) => {
     const isChecked = field.value?.includes(value);
@@ -293,26 +281,42 @@ export function OutfitForm({ onResults, isLoading, setIsLoading }: OutfitFormPro
             )}
         />
         
-         <FormField
-          control={form.control}
-          name="budgetRange"
-          render={({ field }) => (
+        <FormField
+            control={form.control}
+            name="budgetRange"
+            render={({ field }) => (
             <FormItem className="space-y-4">
-              <FormLabel className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-[10px]">BUDGET RANGE</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                >
-                    <BudgetCard field={field} value="Under ₹1,500" title="Budget Drip" icon={<div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center"><Wallet className="w-6 h-6 text-green-400" /></div>} price="Under ₹1,500" brands="Meesho · Flipkart · Glowroad" tagline="// look fly, spend less" selectedValue={field.value} />
-                    <BudgetCard field={field} value="Under ₹3,000" title="Mid-range" icon={<div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><Flame className="w-6 h-6 text-orange-400" /></div>} price="Under ₹3,000" brands="Myntra · Ajio · H&M · Newme" tagline="// sweet spot · most picks here" selectedValue={field.value} />
-                    <BudgetCard field={field} value="Under ₹5,000" title="Premium" icon={<div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center"><Gem className="w-6 h-6 text-purple-400" /></div>} price="Under ₹5,000" brands="Zara · Mango · Nike · Snitch" tagline="// quality fits · long wear" selectedValue={field.value} />
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
+                <FormLabel className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-[10px]">BUDGET RANGE</FormLabel>
+                <FormControl>
+                    <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                    >
+                        {budgetOptions.map((option) => (
+                            <FormItem key={option.value}>
+                                <FormControl>
+                                    <RadioGroupItem value={option.value} className="sr-only" />
+                                </FormControl>
+                                <FormLabel className={cn(
+                                    "relative block p-6 rounded-2xl border-2 bg-black/20 transition-all cursor-pointer h-full",
+                                    field.value === option.value ? "border-primary gold-glow" : "border-muted/50 hover:border-primary/50"
+                                )}>
+                                    <div className="flex flex-col items-center text-center space-y-3">
+                                        {option.icon}
+                                        <h3 className="font-bold text-lg text-white">{option.title}</h3>
+                                        <p className="font-semibold text-muted-foreground">{option.price}</p>
+                                        <p className="text-xs text-muted-foreground">{option.brands}</p>
+                                        <p className="text-xs text-primary font-mono pt-2 mt-2 border-t border-muted/20 w-full">{option.tagline}</p>
+                                    </div>
+                                </FormLabel>
+                            </FormItem>
+                        ))}
+                    </RadioGroup>
+                </FormControl>
+                <FormMessage />
             </FormItem>
-          )}
+        )}
         />
         
         <div className="space-y-4 rounded-xl border-2 border-muted/50 p-6">
