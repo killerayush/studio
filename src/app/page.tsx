@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ShoppingBag, ArrowRight, Zap, Globe, Rocket } from "lucide-react";
+import { Sparkles, ShoppingBag, ArrowRight, Zap, Globe, Rocket, Camera } from "lucide-react";
 
 export default function Home() {
   return (
@@ -29,11 +29,11 @@ export default function Home() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-white to-secondary italic">Vyxen it.</span>
           </h1>
           
-          <p className="text-lg md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 animate-fade-in-up [animation-delay:200ms] font-medium">
-            AI builds your perfect outfit based on your vibe, body & occasion — instantly. Built different. Styled smarter.
+          <p className="text-lg md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 animate-fade-in-up [animation-delay:200ms] font-medium">
+             AI builds your perfect outfit based on your vibe, body & occasion — instantly. Built different. Styled smarter.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-in-up [animation-delay:300ms]">
+          <div className="flex flex-wrap items-center justify-center gap-6 animate-fade-in-up [animation-delay:300ms]">
             <Button asChild size="lg" className="h-16 px-10 bg-primary text-background font-black hover:bg-primary/90 text-xl rounded-full shadow-2xl shadow-primary/30 gold-glow group">
               <Link href="/generate" className="flex items-center">
                 GET MY FIT <Rocket className="ml-3 w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -41,6 +41,11 @@ export default function Home() {
             </Button>
             <Button variant="outline" size="lg" className="h-16 px-10 border-white/10 hover:bg-white/5 rounded-full text-lg glass font-bold">
               Explore Trends
+            </Button>
+            <Button asChild variant="outline" size="lg" className="h-16 px-10 border-secondary/50 hover:bg-secondary/10 rounded-full text-lg glass font-bold text-secondary neon-glow">
+              <Link href="/analyze" className="flex items-center gap-2">
+                Analyze My Style <Camera className="w-5 h-5" />
+              </Link>
             </Button>
           </div>
 
