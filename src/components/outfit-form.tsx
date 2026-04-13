@@ -226,7 +226,7 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value}
                   className="grid grid-cols-1 md:grid-cols-3 gap-4"
                 >
                   <FormItem>
@@ -269,7 +269,7 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                 <FormControl>
                     <RadioGroup
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"
                     >
                         {occasionOptions.map(option => (
@@ -307,7 +307,7 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                 <FormControl>
                     <RadioGroup
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         className="grid grid-cols-1 md:grid-cols-3 gap-4"
                     >
                         {budgetOptions.map((option) => (
@@ -352,7 +352,7 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                                 <FormControl>
                                     <RadioGroup
                                     onValueChange={field.onChange}
-                                    defaultValue={field.value}
+                                    value={field.value}
                                     className="flex flex-wrap gap-2"
                                     >
                                         {['Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear'].map((vibe) => (
@@ -461,7 +461,7 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                          <FormField control={form.control} name="lifestyle" render={({ field }) => (
                             <FormItem><FormLabel className="text-muted-foreground/80 text-xs">LIFESTYLE</FormLabel>
                             <FormControl>
-                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-wrap gap-2 pt-2">
+                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-wrap gap-2 pt-2">
                                     {['Student', 'Working Professional', 'Freelancer / WFH', 'Fitness Enthusiast', 'Social / Party-goer'].map(item => (
                                     <FormItem key={item}>
                                         <FormControl><RadioGroupItem value={item} className="sr-only" /></FormControl>
