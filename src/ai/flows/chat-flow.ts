@@ -58,10 +58,17 @@ const styleChatFlow = ai.defineFlow(
     outputSchema: StyleChatOutputSchema,
   },
   async input => {
-    const {output} = await styleChatPrompt(input);
-    if (!output) {
-      throw new Error('The AI coach failed to generate a response.');
+    try {
+      const {output} = await styleChatPrompt(input);
+      if (!output) {
+        throw new Error('The AI coach failed to generate a response.');
+      }
+      return output;
+    } catch (error: any) {
+      console.warn('AI Chat failed (Quota/Limit), serving fallback response:', error.message);
+      return {
+        response: "I'm experiencing a high volume of requests right now. Please wait a moment and try your message again.",
+      };
     }
-    return output;
   }
 );
