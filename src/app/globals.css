@@ -5,36 +5,36 @@
 
 @layer base {
   :root {
-    /* Base: Deep Black #0A0A0A */
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
+    /* Base: Dark Charcoal from GRAFFICO */
+    --background: 20 5% 10%;
+    --foreground: 36 43% 91%;
     
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 98%;
+    --card: 20 5% 13%;
+    --card-foreground: 36 43% 91%;
     
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 20 5% 11%;
+    --popover-foreground: 36 43% 91%;
     
-    /* Primary: Vyxen Gold #D4AF37 */
-    --primary: 46 65% 52%;
-    --primary-foreground: 0 0% 4%;
+    /* Primary: Muted Gold from GRAFFICO */
+    --primary: 38 62% 57%;
+    --primary-foreground: 20 5% 10%;
     
-    --secondary: 280 70% 60%; /* Modern Purple */
-    --secondary-foreground: 0 0% 98%;
+    /* Secondary/Accent: Rusty Red from GRAFFICO */
+    --secondary: 8 52% 51%;
+    --secondary-foreground: 36 43% 91%;
     
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 20 5% 20%;
+    --muted-foreground: 36 43% 65%;
     
-    /* Accent: Neon Pink/Purple Gradient #FF00FF to #8000FF */
-    --accent: 300 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 8 52% 51%;
+    --accent-foreground: 36 43% 91%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 46 65% 52%;
+    --border: 20 5% 20%;
+    --input: 20 5% 20%;
+    --ring: 38 62% 57%;
     
     --radius: 1rem;
   }
