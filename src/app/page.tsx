@@ -110,6 +110,7 @@ export default function Home() {
           <div className="flex gap-10 text-sm font-bold uppercase tracking-widest text-muted-foreground">
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link href="/feedback" className="hover:text-primary transition-colors">Feedback</Link>
           </div>
         </div>
       </footer>
