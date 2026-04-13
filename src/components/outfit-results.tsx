@@ -3,7 +3,7 @@
 import { GenerateOutfitOutput, GenerateOutfitInput } from "@/ai/flows/generate-personalized-outfit-suggestions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ShoppingBag, Lightbulb, ArrowRight, Info, AlertCircle, RefreshCw, Zap, Sparkles } from "lucide-react";
+import { ExternalLink, ShoppingBag, Lightbulb, ArrowRight, Info, AlertCircle, RefreshCw, Zap } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,21 @@ export function OutfitResults({ results, onRetry, onStyleRetry }: OutfitResultsP
   
   const platformOrder = ['amazon', 'myntra', 'ajio', 'flipkart', 'meesho', 'hm', 'zara', 'nykaa', 'tataCliq', 'snapdeal', 'vMart', 'bata'];
   
+  const platformSearchUrls: { [key: string]: string } = {
+    amazon: 'https://www.amazon.in/s?k=',
+    myntra: 'https://www.myntra.com/search?q=',
+    ajio: 'https://www.ajio.com/search/?text=',
+    flipkart: 'https://www.flipkart.com/search?q=',
+    meesho: 'https://www.meesho.com/search?q=',
+    hm: 'https://www2.hm.com/en_in/search-results.html?q=',
+    zara: 'https://www.zara.com/in/en/search?searchTerm=',
+    nykaa: 'https://www.nykaafashion.com/search/result/?q=',
+    tataCliq: 'https://www.tatacliq.com/search/?searchCategory=all&text=',
+    snapdeal: 'https://www.snapdeal.com/search?keyword=',
+    vMart: 'https://www.vmartretail.com/search/',
+    bata: 'https://www.bata.com/in/search?q=',
+  };
+
   return (
     <div className="space-y-16 animate-fade-in-up pb-20">
       {/* Smart Status Bar */}
@@ -99,7 +114,6 @@ export function OutfitResults({ results, onRetry, onStyleRetry }: OutfitResultsP
             <CardContent className="px-8 pb-8 flex-1 space-y-6">
               <div className="space-y-4">
                 {outfit.items.map((item, itemIdx) => {
-                  const availableLinks = platformOrder.filter(p => item.links[p as keyof typeof item.links]);
                   return (
                     <div key={itemIdx} className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4 hover:bg-white/[0.05] transition-colors">
                       <div className="flex justify-between items-start gap-4">
@@ -111,13 +125,18 @@ export function OutfitResults({ results, onRetry, onStyleRetry }: OutfitResultsP
                       </div>
                       
                       {/* Multi-store Buttons - Horizontal Scroll */}
-                      {availableLinks.length > 0 && (
-                        <div className="flex overflow-x-auto gap-2 pb-1 -mx-1 px-1 no-scrollbar" style={{ scrollbarWidth: 'none' }}>
-                          {availableLinks.map(platform => (
-                            <PlatformButton key={platform} href={item.links[platform as keyof typeof item.links]!} label={platform} />
-                          ))}
-                        </div>
-                      )}
+                      <div className="flex overflow-x-auto gap-2 pb-1 -mx-1 px-1 no-scrollbar" style={{ scrollbarWidth: 'none' }}>
+                        {platformOrder.map(platform => {
+                          const directLink = item.links[platform as keyof typeof item.links];
+                          const query = encodeURIComponent(item.name);
+                          const searchUrl = platformSearchUrls[platform] ? `${platformSearchUrls[platform]}${query}` : '#';
+                          const href = directLink || searchUrl;
+                          
+                          if (href === '#') return null;
+
+                          return <PlatformButton key={platform} href={href} label={platform} />;
+                        })}
+                      </div>
 
                       <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium pt-2 mt-2 border-t border-white/5">
                         <Lightbulb className="w-3.5 h-3.5 text-primary" />
