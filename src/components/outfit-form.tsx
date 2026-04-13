@@ -24,6 +24,8 @@ import { Sparkles, ArrowRight, Loader2, Zap } from "lucide-react";
 import { generatePersonalizedOutfitSuggestions, type GenerateOutfitOutput, type GenerateOutfitInput } from "@/ai/flows/generate-personalized-outfit-suggestions";
 import { useUser } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().optional().nullable(),
@@ -35,6 +37,18 @@ const formSchema = z.object({
   budgetRange: z.enum(['Under ₹1500', 'Under ₹3000', 'Under ₹5000']),
   location: z.string().default("India"),
 });
+
+const occasionOptions = [
+  { value: 'Campus', label: 'CAMPUS', emoji: '🎓', subtitle: '// LOUD FITS ONLY →', image: 'https://picsum.photos/seed/campus/400/400', imageHint: 'university campus' },
+  { value: 'Concert', label: 'CONCERT', emoji: '🎤', subtitle: '// LOUD FITS ONLY →', image: 'https://picsum.photos/seed/concert/400/400', imageHint: 'music concert' },
+  { value: 'Date Night', label: 'DATE NIGHT', emoji: '🌹', subtitle: '// CERTIFIED RIZZ →', image: 'https://picsum.photos/seed/datenight/400/400', imageHint: 'romantic evening' },
+  { value: 'Casual', label: 'CASUAL', emoji: '☀️', image: 'https://picsum.photos/seed/casual/400/400', imageHint: 'city skyline' },
+  { value: 'Festival', label: 'FESTIVAL', emoji: '🎡', image: 'https://picsum.photos/seed/festival/400/400', imageHint: 'music festival' },
+  { value: 'Office', label: 'OFFICE', emoji: '💼', image: 'https://picsum.photos/seed/office/400/400', imageHint: 'modern office' },
+  { value: 'Brunch', label: 'BRUNCH', emoji: '🍳', image: 'https://picsum.photos/seed/brunch/400/400', imageHint: 'brunch food' },
+  { value: 'Wedding', label: 'WEDDING GUEST', emoji: '💒', image: 'https://picsum.photos/seed/wedding/400/400', imageHint: 'wedding celebration' },
+];
+
 
 interface OutfitFormProps {
   onResults: (results: GenerateOutfitOutput, input: GenerateOutfitInput) => void;
@@ -54,7 +68,7 @@ export function OutfitForm({ onResults, isLoading, setIsLoading }: OutfitFormPro
       height: 175,
       weight: 70,
       style: "Streetwear",
-      occasion: "College",
+      occasion: "Casual",
       budgetRange: "Under ₹3000",
       location: "India",
     },
@@ -163,32 +177,48 @@ export function OutfitForm({ onResults, isLoading, setIsLoading }: OutfitFormPro
               </FormItem>
             )}
           />
+          
           <FormField
             control={form.control}
             name="occasion"
             render={({ field }) => (
-              <FormItem>
+                <FormItem className="md:col-span-2">
                 <FormLabel className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-[10px]">05 // Context</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="h-14 bg-white/5 border-white/10 text-lg rounded-xl">
-                      <SelectValue placeholder="Select occasion" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="glass">
-                    <SelectItem value="College">College / Campus</SelectItem>
-                    <SelectItem value="Work">Office / Work</SelectItem>
-                    <SelectItem value="Party">Party / Clubbing</SelectItem>
-                    <SelectItem value="Wedding">Wedding</SelectItem>
-                    <SelectItem value="Date">Date Night</SelectItem>
-                    <SelectItem value="Casual">Casual Day Out</SelectItem>
-                    <SelectItem value="Gym">Gym Session</SelectItem>
-                  </SelectContent>
-                </Select>
+                    <FormControl>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+                        {occasionOptions.map((option) => (
+                            <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => field.onChange(option.value)}
+                            className={cn(
+                                "relative aspect-square rounded-3xl overflow-hidden group transition-all duration-300",
+                                field.value === option.value ? "ring-4 ring-primary ring-offset-2 ring-offset-background" : "ring-2 ring-transparent hover:ring-primary/50"
+                            )}
+                            >
+                            <Image src={option.image} alt={option.label} fill className="object-cover transition-transform duration-500 group-hover:scale-110" data-ai-hint={option.imageHint}/>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
+                                <p className="text-3xl md:text-4xl">{option.emoji}</p>
+                                <h4 className="text-white font-black text-lg md:text-xl uppercase tracking-tighter mt-1">{option.label}</h4>
+                                {option.subtitle && (
+                                <p className="text-primary text-[10px] font-bold uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{option.subtitle}</p>
+                                )}
+                            </div>
+                            </button>
+                        ))}
+                        <div className="relative aspect-square rounded-3xl overflow-hidden group bg-card border-2 border-dashed border-muted flex flex-col items-center justify-center text-center p-2">
+                            <Loader2 className="w-8 h-8 text-primary/50 animate-spin" />
+                            <h4 className="text-muted-foreground font-black text-sm uppercase tracking-widest mt-4">ENGINE LOADING</h4>
+                            <p className="text-muted-foreground/50 text-[10px] font-bold uppercase tracking-widest mt-1">CALCULATING DRIP...</p>
+                        </div>
+                        </div>
+                    </FormControl>
                 <FormMessage />
-              </FormItem>
+                </FormItem>
             )}
-          />
+            />
+
           <FormField
             control={form.control}
             name="budgetRange"
