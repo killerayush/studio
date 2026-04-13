@@ -22,7 +22,7 @@ const GenerateOutfitInputSchema = z.object({
   inseam: z.coerce.number().optional().describe('Inseam measurement in inches.'),
   
   // Style Preferences
-  style: z.enum(['Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear']).describe('User primary style preference.'),
+  style: z.enum(['Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear', 'Formal']).describe('User primary style preference.'),
   preferredTopStyles: z.array(z.string()).optional().describe('Specific types of tops preferred by user (e.g., T-Shirts, Shirts, Hoodies).'),
   preferredFootwear: z.array(z.string()).optional().describe('Specific types of footwear preferred by user (e.g., Sneakers, Loafers).'),
 

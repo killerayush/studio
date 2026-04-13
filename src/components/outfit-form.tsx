@@ -37,7 +37,7 @@ const formSchema = z.object({
   occasion: z.string().min(1, { message: "Please select an occasion." }),
   
   // Style Details
-  style: z.enum(['Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear']),
+  style: z.enum(['Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear', 'Formal']),
   shoeSize: z.coerce.number({invalid_type_error: "Please enter a valid number."}).min(30).max(50).optional(),
   
   preferredTopStyles: z.array(z.string()).optional(),
@@ -85,7 +85,7 @@ const genderOptions = [
 ];
 
 const styleOptions = [
-    'Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear'
+    'Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear', 'Formal'
 ];
 
 const lifestyleOptions = [
