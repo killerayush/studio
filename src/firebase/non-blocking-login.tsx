@@ -9,10 +9,10 @@ import {
 } from 'firebase/auth';
 
 /** Initiate Google sign-in (non-blocking). */
-export function initiateGoogleSignIn(authInstance: Auth): void {
+export function initiateGoogleSignIn(authInstance: Auth) {
   const provider = new GoogleAuthProvider();
   // Using popup for immediate non-blocking flow
-  signInWithPopup(authInstance, provider);
+  return signInWithPopup(authInstance, provider);
 }
 
 /** Initiate anonymous sign-in (non-blocking). */
