@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Sparkles, ArrowRight, Loader2, Flame, Wallet, Gem, Case, Briefcase, PartyPopper, Dumbbell, Home } from "lucide-react";
+import { Sparkles, ArrowRight, Loader2, Flame, Wallet, Gem, GraduationCap, Briefcase, PartyPopper, Dumbbell, Home } from "lucide-react";
 import { generatePersonalizedOutfitSuggestions, type GenerateOutfitOutput, type GenerateOutfitInput } from "@/ai/flows/generate-personalized-outfit-suggestions";
 import { useUser } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -62,7 +62,7 @@ interface OutfitFormProps {
 const occasionOptions = [
     { value: 'Work', label: 'Work', icon: <Briefcase className="w-8 h-8" />, image: 'https://picsum.photos/seed/work/400/500' },
     { value: 'Party', label: 'Party', icon: <PartyPopper className="w-8 h-8" />, image: 'https://picsum.photos/seed/party/400/500' },
-    { value: 'College', label: 'College', icon: <Case className="w-8 h-8" />, image: 'https://picsum.photos/seed/college/400/500' },
+    { value: 'College', label: 'College', icon: <GraduationCap className="w-8 h-8" />, image: 'https://picsum.photos/seed/college/400/500' },
     { value: 'Gym', label: 'Gym', icon: <Dumbbell className="w-8 h-8" />, image: 'https://picsum.photos/seed/gym/400/500' },
     { value: 'Home', label: 'Home', icon: <Home className="w-8 h-8" />, image: 'https://picsum.photos/seed/home/400/500' },
 ];
