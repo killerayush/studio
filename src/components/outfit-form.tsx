@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -13,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Sparkles, ArrowRight, Loader2, Flame, Wallet, Gem, GraduationCap, Briefcase, PartyPopper, Dumbbell, Home, Info } from "lucide-react";
 import { generatePersonalizedOutfitSuggestions, type GenerateOutfitOutput, type GenerateOutfitInput } from "@/ai/flows/generate-personalized-outfit-suggestions";
 import { type StyleAnalysisOutput } from "@/ai/flows/style-analyzer-flow";
@@ -74,6 +76,20 @@ const budgetOptions = [
     { value: "Under ₹1,500", title: "Budget Drip", icon: <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center"><Wallet className="w-6 h-6 text-green-400" /></div>, price: "Under ₹1,500", brands: "Meesho · Flipkart · Glowroad", tagline: "// look fly, spend less" },
     { value: "Under ₹3,000", title: "Mid-range", icon: <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center"><Flame className="w-6 h-6 text-orange-400" /></div>, price: "Under ₹3,000", brands: "Myntra · Ajio · H&M · Newme", tagline: "// sweet spot · most picks here" },
     { value: "Under ₹5,000", title: "Premium", icon: <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center"><Gem className="w-6 h-6 text-purple-400" /></div>, price: "Under ₹5,000", brands: "Zara · Mango · Nike · Snitch", tagline: "// quality fits · long wear" }
+];
+
+const genderOptions = [
+    { value: 'Male', label: 'Male / Masc' },
+    { value: 'Female', label: 'Female / Femme ✨' },
+    { value: 'Non-binary', label: 'Non-binary / Flex ♦' }
+];
+
+const styleOptions = [
+    'Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear'
+];
+
+const lifestyleOptions = [
+    'Student', 'Working Professional', 'Freelancer / WFH', 'Fitness Enthusiast', 'Social / Party-goer'
 ];
 
 const StyleCheckboxButton = ({ field, value, label, icon }: { field: any, value: string, label: string, icon: string }) => {
@@ -229,30 +245,17 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                   value={field.value}
                   className="grid grid-cols-1 md:grid-cols-3 gap-4"
                 >
-                  <FormItem>
-                    <FormControl>
-                      <RadioGroupItem value="Male" className="sr-only" />
-                    </FormControl>
-                    <FormLabel className={cn("flex font-semibold items-center justify-center p-4 rounded-xl cursor-pointer border-2 transition-all", field.value === "Male" ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50")}>
-                      Male / Masc
-                    </FormLabel>
-                  </FormItem>
-                   <FormItem>
-                    <FormControl>
-                      <RadioGroupItem value="Female" className="sr-only" />
-                    </FormControl>
-                    <FormLabel className={cn("flex font-semibold items-center justify-center p-4 rounded-xl cursor-pointer border-2 transition-all", field.value === "Female" ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50")}>
-                      Female / Femme ✨
-                    </FormLabel>
-                  </FormItem>
-                   <FormItem>
-                    <FormControl>
-                      <RadioGroupItem value="Non-binary" className="sr-only" />
-                    </FormControl>
-                    <FormLabel className={cn("flex font-semibold items-center justify-center p-4 rounded-xl cursor-pointer border-2 transition-all", field.value === "Non-binary" ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50")}>
-                      Non-binary / Flex ♦
-                    </FormLabel>
-                  </FormItem>
+                  {genderOptions.map((option) => (
+                    <div key={option.value}>
+                      <RadioGroupItem value={option.value} id={`gender-${option.value}`} className="sr-only" />
+                      <Label
+                        htmlFor={`gender-${option.value}`}
+                        className={cn("flex font-semibold items-center justify-center p-4 rounded-xl cursor-pointer border-2 transition-all", field.value === option.value ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50")}
+                      >
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
                 </RadioGroup>
               </FormControl>
               <FormMessage />
@@ -273,23 +276,23 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"
                     >
                         {occasionOptions.map(option => (
-                        <FormItem key={option.value}>
-                            <FormControl>
-                                <RadioGroupItem value={option.value} className="sr-only" />
-                            </FormControl>
-                            <FormLabel className={cn(
-                                "relative flex flex-col items-center justify-end p-4 rounded-2xl cursor-pointer border-2 h-40 transition-all overflow-hidden",
+                          <div key={option.value}>
+                            <RadioGroupItem value={option.value} id={`occasion-${option.value}`} className="sr-only" />
+                            <Label 
+                                htmlFor={`occasion-${option.value}`}
+                                className={cn(
+                                "relative flex flex-col items-center justify-end p-4 rounded-2xl cursor-pointer border-2 h-40 transition-all overflow-hidden group/occasion",
                                 field.value === option.value ? "border-primary gold-glow" : "border-muted/50 bg-black/20 hover:border-primary/50"
                             )}>
-                                <Image src={option.image} alt={option.label} fill className="object-cover z-0 opacity-30 group-hover:opacity-40 transition-opacity"/>
+                                <Image src={option.image} alt={option.label} fill className="object-cover z-0 opacity-30 group-hover/occasion:opacity-40 transition-opacity"/>
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
                                 <div className="relative z-20 text-center text-white">
                                     <div className="mb-2">{option.icon}</div>
                                     <p className="font-bold text-lg">{option.label}</p>
                                     <p className="text-xs text-primary font-bold">Vyxen</p>
                                 </div>
-                            </FormLabel>
-                        </FormItem>
+                            </Label>
+                          </div>
                         ))}
                     </RadioGroup>
                 </FormControl>
@@ -311,11 +314,11 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                         className="grid grid-cols-1 md:grid-cols-3 gap-4"
                     >
                         {budgetOptions.map((option) => (
-                            <FormItem key={option.value}>
-                                <FormControl>
-                                    <RadioGroupItem value={option.value} className="sr-only" />
-                                </FormControl>
-                                <FormLabel className={cn(
+                            <div key={option.value}>
+                                <RadioGroupItem value={option.value} id={`budget-${option.value}`} className="sr-only" />
+                                <Label
+                                  htmlFor={`budget-${option.value}`}
+                                  className={cn(
                                     "relative block p-6 rounded-2xl border-2 bg-black/20 transition-all cursor-pointer h-full",
                                     field.value === option.value ? "border-primary gold-glow" : "border-muted/50 hover:border-primary/50"
                                 )}>
@@ -326,8 +329,8 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                                         <p className="text-xs text-muted-foreground">{option.brands}</p>
                                         <p className="text-xs text-primary font-mono pt-2 mt-2 border-t border-muted/20 w-full">{option.tagline}</p>
                                     </div>
-                                </FormLabel>
-                            </FormItem>
+                                </Label>
+                            </div>
                         ))}
                     </RadioGroup>
                 </FormControl>
@@ -355,15 +358,15 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                                     value={field.value}
                                     className="flex flex-wrap gap-2"
                                     >
-                                        {['Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear'].map((vibe) => (
-                                             <FormItem key={vibe}>
-                                                <FormControl>
-                                                <RadioGroupItem value={vibe} className="sr-only" />
-                                                </FormControl>
-                                                <FormLabel className={cn("flex items-center justify-center px-4 py-2 rounded-lg cursor-pointer border-2 transition-all text-sm font-semibold", field.value === vibe ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50")}>
+                                        {styleOptions.map((vibe) => (
+                                            <div key={vibe}>
+                                                <RadioGroupItem value={vibe} id={`vibe-${vibe}`} className="sr-only" />
+                                                <Label
+                                                  htmlFor={`vibe-${vibe}`}
+                                                  className={cn("flex items-center justify-center px-4 py-2 rounded-lg cursor-pointer border-2 transition-all text-sm font-semibold", field.value === vibe ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50")}>
                                                 {vibe}
-                                                </FormLabel>
-                                            </FormItem>
+                                                </Label>
+                                            </div>
                                         ))}
                                     </RadioGroup>
                                 </FormControl>
@@ -462,13 +465,15 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
                             <FormItem><FormLabel className="text-muted-foreground/80 text-xs">LIFESTYLE</FormLabel>
                             <FormControl>
                                 <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-wrap gap-2 pt-2">
-                                    {['Student', 'Working Professional', 'Freelancer / WFH', 'Fitness Enthusiast', 'Social / Party-goer'].map(item => (
-                                    <FormItem key={item}>
-                                        <FormControl><RadioGroupItem value={item} className="sr-only" /></FormControl>
-                                        <FormLabel className={cn("flex items-center justify-center px-4 py-2 rounded-lg cursor-pointer border-2 transition-all text-sm font-semibold", field.value === item ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50")}>
+                                    {lifestyleOptions.map(item => (
+                                    <div key={item}>
+                                        <RadioGroupItem value={item} id={`lifestyle-${item}`} className="sr-only" />
+                                        <Label 
+                                          htmlFor={`lifestyle-${item}`}
+                                          className={cn("flex items-center justify-center px-4 py-2 rounded-lg cursor-pointer border-2 transition-all text-sm font-semibold", field.value === item ? "border-primary bg-primary/10" : "border-muted/50 bg-black/20 hover:border-primary/50")}>
                                             {item}
-                                        </FormLabel>
-                                    </FormItem>
+                                        </Label>
+                                    </div>
                                     ))}
                                 </RadioGroup>
                             </FormControl>
@@ -506,3 +511,4 @@ export function OutfitForm({ onResults, isLoading, setIsLoading, initialAnalysis
     </Form>
   );
 }
+
