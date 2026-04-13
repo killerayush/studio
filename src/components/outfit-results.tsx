@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, ShoppingBag, Lightbulb, ArrowRight, Info, AlertCircle, RefreshCw, Zap } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useUser, useFirestore } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface OutfitResultsProps {
   results: GenerateOutfitOutput;
@@ -14,7 +16,9 @@ interface OutfitResultsProps {
 }
 
 export function OutfitResults({ results, onRetry, onStyleRetry }: OutfitResultsProps) {
-  
+  const { user } = useUser();
+  const firestore = useFirestore();
+
   const platformOrder = ['amazon', 'myntra', 'ajio', 'flipkart', 'meesho', 'hm', 'zara', 'nykaa', 'tataCliq', 'snapdeal', 'vMart', 'bata'];
   
   const platformSearchUrls: { [key: string]: string } = {
@@ -30,6 +34,21 @@ export function OutfitResults({ results, onRetry, onStyleRetry }: OutfitResultsP
     snapdeal: 'https://www.snapdeal.com/search?keyword=',
     vMart: 'https://www.vmartretail.com/search/',
     bata: 'https://www.bata.com/in/search?q=',
+  };
+
+  const handleLinkClick = (item: any, platform: string, href: string, outfitName: string) => {
+    if (firestore && user) {
+      addDoc(collection(firestore, 'clicks'), {
+        userId: user.uid,
+        outfitName: outfitName,
+        itemType: item.type,
+        platform: platform,
+        productLink: href,
+        timestamp: serverTimestamp(),
+      });
+    }
+    // Open the link in a new tab
+    window.open(href, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -134,7 +153,13 @@ export function OutfitResults({ results, onRetry, onStyleRetry }: OutfitResultsP
                           
                           if (href === '#') return null;
 
-                          return <PlatformButton key={platform} href={href} label={platform} />;
+                          return (
+                            <PlatformButton
+                              key={platform}
+                              label={platform}
+                              onClick={() => handleLinkClick(item, platform, href, outfit.name)}
+                            />
+                          );
                         })}
                       </div>
 
@@ -176,18 +201,16 @@ export function OutfitResults({ results, onRetry, onStyleRetry }: OutfitResultsP
   );
 }
 
-function PlatformButton({ href, label }: { href: string; label: string }) {
+function PlatformButton({ onClick, label }: { onClick: () => void; label: string }) {
   return (
-    <Button 
-      variant="outline" 
-      size="sm" 
-      asChild 
-      className="h-8 px-4 bg-white/5 border-white/10 hover:bg-primary/10 hover:border-primary/50 text-white hover:text-primary rounded-full text-[10px] font-bold uppercase tracking-widest transition-all shrink-0"
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={onClick}
+      className="h-8 px-4 bg-white/5 border-white/10 hover:bg-primary/10 hover:border-primary/50 text-white hover:text-primary rounded-full text-[10px] font-bold uppercase tracking-widest transition-all shrink-0 gap-1.5"
     >
-      <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
-        {label}
-        <ArrowRight className="w-2.5 h-2.5" />
-      </a>
+      {label}
+      <ArrowRight className="w-2.5 h-2.5" />
     </Button>
   );
 }

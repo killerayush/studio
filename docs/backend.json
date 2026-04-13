@@ -275,6 +275,10 @@
           "type": "string",
           "description": "Reference to the GeneratedOutfit from which the item was clicked. (Relationship: GeneratedOutfit 1:N ClickEvent)"
         },
+        "outfitName": {
+          "type": "string",
+          "description": "The name of the outfit from which the item was clicked. Used for analytics before full outfit persistence is implemented."
+        },
         "itemType": {
           "type": "string",
           "description": "The type of the item that was clicked (e.g., 'T-shirt', 'Shoes')."
@@ -297,7 +301,6 @@
       "required": [
         "id",
         "userId",
-        "outfitId",
         "itemType",
         "platform",
         "productLink",
