@@ -144,6 +144,7 @@ function getFallbackOutfits(style: string, gender: string): any[] {
       styleTip: "Focus on the fit and clean sneakers.",
       totalPrice: "₹1,899",
       imageUrl: "https://picsum.photos/seed/fallback-budget/800/1000",
+      imagePrompt: "A minimalist urban outfit featuring an oversized sand t-shirt and dark relaxed fit cargoes with high-top sneakers.",
       items: [
         {
           type: "Top",
@@ -175,6 +176,7 @@ function getFallbackOutfits(style: string, gender: string): any[] {
       styleTip: "Layer with a light flannel or denim jacket.",
       totalPrice: "₹3,499",
       imageUrl: "https://picsum.photos/seed/fallback-trendy/800/1000",
+      imagePrompt: "A trendy layered look with a heavyweight boxy tee, straight leg distressed denim, and a silver chain accessory.",
       items: [
         {
           type: "Top",
@@ -206,6 +208,7 @@ function getFallbackOutfits(style: string, gender: string): any[] {
       styleTip: "The ultimate power move for any occasion.",
       totalPrice: "₹7,800",
       imageUrl: "https://picsum.photos/seed/fallback-premium/800/1000",
+      imagePrompt: "A premium studio select fit with a knit polo, pleated trousers, and clean leather court sneakers.",
       items: [
         {
           type: "Top",
