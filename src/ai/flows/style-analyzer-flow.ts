@@ -49,7 +49,6 @@ const analyzeStylePrompt = ai.definePrompt({
     name: 'styleAnalyzerPrompt',
     input: { schema: StyleAnalysisInputSchema },
     output: { schema: StyleAnalysisOutputSchema },
-    model: 'googleai/gemini-pro-vision', // Use a vision-capable model
     config: {
         temperature: 0.7,
     },
