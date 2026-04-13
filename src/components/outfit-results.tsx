@@ -1,18 +1,22 @@
 "use client";
 
-import { GenerateOutfitOutput } from "@/ai/flows/generate-personalized-outfit-suggestions";
+import { GenerateOutfitOutput, GenerateOutfitInput } from "@/ai/flows/generate-personalized-outfit-suggestions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ShoppingBag, Lightbulb, ArrowRight, Info, AlertCircle, RefreshCw, Zap } from "lucide-react";
+import { ExternalLink, ShoppingBag, Lightbulb, ArrowRight, Info, AlertCircle, RefreshCw, Zap, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface OutfitResultsProps {
   results: GenerateOutfitOutput;
   onRetry?: () => void;
+  onStyleRetry: (style: GenerateOutfitInput['style']) => void;
 }
 
-export function OutfitResults({ results, onRetry }: OutfitResultsProps) {
+export function OutfitResults({ results, onRetry, onStyleRetry }: OutfitResultsProps) {
+  
+  const platformOrder = ['amazon', 'myntra', 'ajio', 'flipkart', 'meesho', 'hm', 'zara', 'nykaa', 'tataCliq', 'snapdeal', 'vMart', 'bata'];
+  
   return (
     <div className="space-y-16 animate-fade-in-up pb-20">
       {/* Smart Status Bar */}
@@ -94,35 +98,34 @@ export function OutfitResults({ results, onRetry }: OutfitResultsProps) {
 
             <CardContent className="px-8 pb-8 flex-1 space-y-6">
               <div className="space-y-4">
-                {outfit.items.map((item, itemIdx) => (
-                  <div key={itemIdx} className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4 hover:bg-white/[0.05] transition-colors">
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-1 block">{item.type}</span>
-                        <h4 className="text-lg font-bold text-white leading-tight">{item.name}</h4>
+                {outfit.items.map((item, itemIdx) => {
+                  const availableLinks = platformOrder.filter(p => item.links[p as keyof typeof item.links]);
+                  return (
+                    <div key={itemIdx} className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-4 hover:bg-white/[0.05] transition-colors">
+                      <div className="flex justify-between items-start gap-4">
+                        <div>
+                          <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-1 block">{item.type}</span>
+                          <h4 className="text-lg font-bold text-white leading-tight">{item.name}</h4>
+                        </div>
+                        <span className="text-primary font-black tracking-tight shrink-0">{item.price}</span>
                       </div>
-                      <span className="text-primary font-black tracking-tight shrink-0">{item.price}</span>
-                    </div>
-                    
-                    {/* Multi-store Buttons - Horizontal Scroll */}
-                    <div className="flex overflow-x-auto gap-2 pb-1 scrollbar-hide no-scrollbar">
-                      {item.links.meesho && <PlatformButton href={item.links.meesho} label="Meesho" />}
-                      {item.links.amazon && <PlatformButton href={item.links.amazon} label="Amazon" />}
-                      {item.links.myntra && <PlatformButton href={item.links.myntra} label="Myntra" />}
-                      {item.links.ajio && <PlatformButton href={item.links.ajio} label="Ajio" />}
-                      {item.links.flipkart && <PlatformButton href={item.links.flipkart} label="Flipkart" />}
-                      {item.links.hm && <PlatformButton href={item.links.hm} label="H&M" />}
-                      {item.links.zara && <PlatformButton href={item.links.zara} label="Zara" />}
-                      {item.links.nykaa && <PlatformButton href={item.links.nykaa} label="Nykaa" />}
-                      {item.links.tataCliq && <PlatformButton href={item.links.tataCliq} label="Tata Cliq" />}
-                    </div>
+                      
+                      {/* Multi-store Buttons - Horizontal Scroll */}
+                      {availableLinks.length > 0 && (
+                        <div className="flex overflow-x-auto gap-2 pb-1 -mx-1 px-1 no-scrollbar" style={{ scrollbarWidth: 'none' }}>
+                          {availableLinks.map(platform => (
+                            <PlatformButton key={platform} href={item.links[platform as keyof typeof item.links]!} label={platform} />
+                          ))}
+                        </div>
+                      )}
 
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium pt-1 border-t border-white/5">
-                      <Lightbulb className="w-3.5 h-3.5 text-primary" />
-                      {item.itemTip}
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium pt-2 mt-2 border-t border-white/5">
+                        <Lightbulb className="w-3.5 h-3.5 text-primary" />
+                        {item.itemTip}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </CardContent>
             
@@ -140,6 +143,16 @@ export function OutfitResults({ results, onRetry }: OutfitResultsProps) {
           </Card>
         ))}
       </div>
+
+      <div className="max-w-4xl mx-auto pt-16 text-center space-y-6">
+        <h3 className="text-xl font-headline font-bold uppercase tracking-widest text-muted-foreground">Not the vibe?</h3>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Button onClick={() => onStyleRetry('Minimal')} variant="outline" className="glass h-12 rounded-xl text-base font-bold">Try a Minimal Fit</Button>
+          <Button onClick={() => onStyleRetry('Streetwear')} variant="outline" className="glass h-12 rounded-xl text-base font-bold">Try a Streetwear Fit</Button>
+          <Button onClick={() => onStyleRetry('Formal')} variant="outline" className="glass h-12 rounded-xl text-base font-bold">Try a Formal Fit</Button>
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -150,7 +163,7 @@ function PlatformButton({ href, label }: { href: string; label: string }) {
       variant="outline" 
       size="sm" 
       asChild 
-      className="h-8 px-4 bg-white/5 border-white/10 hover:bg-primary/10 hover:border-primary/50 text-white hover:text-primary rounded-full text-[10px] font-bold transition-all shrink-0"
+      className="h-8 px-4 bg-white/5 border-white/10 hover:bg-primary/10 hover:border-primary/50 text-white hover:text-primary rounded-full text-[10px] font-bold uppercase tracking-widest transition-all shrink-0"
     >
       <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
         {label}

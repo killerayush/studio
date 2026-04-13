@@ -4,14 +4,18 @@ import { useState, useRef } from "react";
 import { Navbar } from "@/components/navbar";
 import { OutfitForm } from "@/components/outfit-form";
 import { OutfitResults } from "@/components/outfit-results";
-import { type GenerateOutfitOutput, type GenerateOutfitInput } from "@/ai/flows/generate-personalized-outfit-suggestions";
+import { type GenerateOutfitOutput, type GenerateOutfitInput, generatePersonalizedOutfitSuggestions } from "@/ai/flows/generate-personalized-outfit-suggestions";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function GeneratePage() {
   const [results, setResults] = useState<GenerateOutfitOutput | null>(null);
   const [lastInput, setLastInput] = useState<GenerateOutfitInput | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const handleResults = (res: GenerateOutfitOutput, input: GenerateOutfitInput) => {
     setResults(res);
@@ -21,9 +25,38 @@ export default function GeneratePage() {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
+  
+  const handleStyleRetry = async (newStyle: GenerateOutfitInput['style']) => {
+    if (!lastInput) return;
+    setIsLoading(true);
+    try {
+      const payload: GenerateOutfitInput = {
+        ...lastInput,
+        style: newStyle,
+      };
+      const result = await generatePersonalizedOutfitSuggestions(payload);
+      handleResults(result, payload);
+    } catch (error) {
+      console.error("Failed to generate new style:", error);
+      toast({
+        variant: "destructive",
+        title: "AI Engine Error",
+        description: "Could not generate a new style. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 relative">
+      {isLoading && (
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+          <Loader2 className="w-16 h-16 animate-spin text-primary" />
+          <p className="mt-4 text-xl font-bold font-headline text-white">Cooking your drip... 🔥</p>
+        </div>
+      )}
       <Navbar />
       
       <main className="container mx-auto px-4 pt-32">
@@ -35,7 +68,7 @@ export default function GeneratePage() {
                 Tell us about yourself, and we'll handle the styling.
               </p>
             </div>
-            <OutfitForm onResults={handleResults} />
+            <OutfitForm onResults={handleResults} setIsLoading={setIsLoading} isLoading={isLoading} />
           </div>
         ) : (
           <div className="space-y-8" ref={resultsRef}>
@@ -52,9 +85,14 @@ export default function GeneratePage() {
             <OutfitResults 
               results={results} 
               onRetry={() => {
-                setResults(null);
-                // The form will be shown again, user can just click button
-              }} 
+                if (!lastInput) return;
+                setIsLoading(true);
+                generatePersonalizedOutfitSuggestions(lastInput)
+                  .then(res => handleResults(res, lastInput))
+                  .catch(err => console.error(err))
+                  .finally(() => setIsLoading(false));
+              }}
+              onStyleRetry={handleStyleRetry}
             />
           </div>
         )}

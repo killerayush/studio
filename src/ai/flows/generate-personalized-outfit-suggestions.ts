@@ -11,11 +11,11 @@ import { z } from 'genkit';
 const GenerateOutfitInputSchema = z.object({
   name: z.string().nullable().optional().describe('User display name.'),
   gender: z.enum(['Male', 'Female', 'Non-binary']).default('Male').describe('User gender preference.'),
-  height: z.number().describe('User height in centimeters.'),
-  weight: z.number().describe('User weight in kilograms.'),
+  height: z.coerce.number().min(50).max(250).describe('User height in centimeters.'),
+  weight: z.coerce.number().min(20).max(300).describe('User weight in kilograms.'),
   style: z.enum(['Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym']).describe('User primary style preference.'),
-  occasion: z.string().describe('The occasion for which the outfit is needed.'),
-  budgetRange: z.string().describe('The budget range for the entire outfit.'),
+  occasion: z.string().min(1).describe('The occasion for which the outfit is needed.'),
+  budgetRange: z.enum(['Under ₹1500', 'Under ₹3000', 'Under ₹5000']).describe('The budget range for the entire outfit.'),
   location: z.string().default('India').describe('The user\'s location for brand context.'),
   userId: z.string().nullable().optional().describe('Authenticated user ID.'),
 });
@@ -69,8 +69,8 @@ const outfitTextPrompt = ai.definePrompt({
   config: {
     temperature: 0.9,
   },
-  prompt: `You are VYXEN AI, a top-tier fashion consultant. Generate 3 distinct and UNIQUE outfit combinations.
-  
+  prompt: `You are VYXEN AI, a top-tier fashion consultant. Generate 3 COMPLETELY DIFFERENT outfits based on the user's profile.
+
 User Profile:
 - Name: {{{name}}}
 - Gender: {{{gender}}}
@@ -80,14 +80,19 @@ User Profile:
 - Budget: {{{budgetRange}}}
 - Location: {{{location}}}
 
-Seed: ${Date.now()}
-
 Rules:
-- Generate 3 UNIQUE options: "Budget fit", "Trendy fit", and "Premium fit".
-- Do NOT repeat common outfits (avoid basic black tee + jeans). Be creative.
-- Provide realistic INR prices for the India market.
-- Ensure the outfits are tailored to the user's specific measurements and style vibe.
-- Include creative imagePrompts for each look.`
+- Generate 3 UNIQUE options with distinct vibes:
+  - Outfit 1: A "Budget fit" - stylish but affordable.
+  - Outfit 2: A "Trendy fit" - something fashionable and current.
+  - Outfit 3: A "Premium fit" - a more elevated, high-quality look.
+- Do NOT repeat common, boring combinations like a plain black t-shirt and blue jeans. Be highly creative and specific.
+- Provide realistic Indian Rupee (₹) prices for the India market.
+- For each item, provide direct shopping links for as many of these platforms as possible: amazon, myntra, ajio, flipkart, meesho, nykaa, tataCliq, hm, zara.
+- Ensure the outfits are tailored to the user's specific measurements and style preference.
+- Include a creative, detailed 'imagePrompt' for each outfit, which will be used to generate a visual representation.
+
+Seed: ${Date.now()}
+`
 });
 
 export async function generatePersonalizedOutfitSuggestions(input: GenerateOutfitInput): Promise<GenerateOutfitOutput> {
@@ -125,20 +130,57 @@ const generatePersonalizedOutfitSuggestionsFlow = ai.defineFlow(
     } catch (error: any) {
       console.warn('AI Generation failed (Quota/Limit), serving fallback:', error.message);
       
-      // Serve high-quality fallback based on style
-      const fallbackOutfits = getFallbackOutfits(input.style, input.gender);
+      const fallbackOutfits = getFallbackOutfits(input);
       return { outfits: fallbackOutfits, isFallback: true };
     }
   }
 );
 
-function getFallbackOutfits(style: string, gender: string): any[] {
-  // Simple style-based fallback generator
+function getFallbackOutfits(input: GenerateOutfitInput): any[] {
+  const { style, occasion, gender } = input;
   const isMale = gender === 'Male';
   
+  if (style === 'Gym' || occasion === 'Gym') {
+    return [
+      {
+        name: "Performance Gym Drop",
+        type: "Budget fit",
+        description: "Engineered for performance, styled for the street.",
+        styleTip: "Pair with performance sneakers and a minimalist watch.",
+        totalPrice: "₹2,199",
+        imageUrl: "https://picsum.photos/seed/fallback-gym/800/1000",
+        imagePrompt: "A male model in a performance gym outfit, with a breathable t-shirt and flexible shorts.",
+        items: [
+          { type: "Top", name: "Dry-Fit Performance Tee", price: "₹599", itemTip: "Look for moisture-wicking technology.", links: { myntra: "https://myntra.com", amazon: "https://amazon.in" } },
+          { type: "Bottom", name: "Stretchable Gym Shorts", price: "₹899", itemTip: "Pockets with zippers are a plus.", links: { ajio: "https://ajio.com", flipkart: "https://flipkart.com" } },
+          { type: "Shoes", name: "Training Sneakers", price: "₹701", itemTip: "Good grip is essential for workouts.", links: { meesho: "https://meesho.com" } }
+        ]
+      }
+    ];
+  }
+
+  if (style === 'Formal' || occasion === 'Work' || occasion === 'Wedding') {
+    return [
+       {
+        name: "Modern Formal Select",
+        type: "Premium fit",
+        description: "A sharp, modern take on formal wear.",
+        styleTip: "A tailored fit is key. Get it altered if needed.",
+        totalPrice: "₹8,500",
+        imageUrl: "https://picsum.photos/seed/fallback-formal/800/1000",
+        imagePrompt: "A person in a sharp, modern tailored formal suit, looking confident.",
+        items: [
+          { type: "Top", name: "Crisp White Shirt", price: "₹1,500", itemTip: "100% cotton for best comfort.", links: { zara: "https://zara.com", hm: "https://hm.com" } },
+          { type: "Bottom", name: "Tailored Trousers", price: "₹3,000", itemTip: "Choose a slim-fit cut for a modern look.", links: { tataCliq: "https://tatacliq.com", myntra: "https://myntra.com" } },
+          { type: "Shoes", name: "Leather Oxford Shoes", price: "₹4,000", itemTip: "Invest in a quality pair that will last.", links: { bata: "https://bata.in", amazon: "https://amazon.in" } }
+        ]
+      }
+    ]
+  }
+
   const commonOutfits = [
     {
-      name: style === 'Streetwear' ? "Urban Utility Drop" : "Classic Minimalist",
+      name: "Urban Utility Drop",
       type: "Budget fit",
       description: "A solid essential look that never misses.",
       styleTip: "Focus on the fit and clean sneakers.",
@@ -146,27 +188,9 @@ function getFallbackOutfits(style: string, gender: string): any[] {
       imageUrl: "https://picsum.photos/seed/fallback-budget/800/1000",
       imagePrompt: "A minimalist urban outfit featuring an oversized sand t-shirt and dark relaxed fit cargoes with high-top sneakers.",
       items: [
-        {
-          type: "Top",
-          name: isMale ? "Oversized Sand T-shirt" : "Cropped Ribbed Top",
-          price: "₹499",
-          itemTip: "Tuck it slightly for a better silhouette.",
-          links: { amazon: "https://amazon.in", myntra: "https://myntra.com" }
-        },
-        {
-          type: "Bottom",
-          name: "Relaxed Fit Cargoes",
-          price: "₹999",
-          itemTip: "Go for a darker shade to keep it versatile.",
-          links: { ajio: "https://ajio.com", flipkart: "https://flipkart.com" }
-        },
-        {
-          type: "Shoes",
-          name: "Canvas High-Tops",
-          price: "₹401",
-          itemTip: "Clean them weekly to keep the drip fresh.",
-          links: { meesho: "https://meesho.com" }
-        }
+        { type: "Top", name: isMale ? "Oversized Sand T-shirt" : "Cropped Ribbed Top", price: "₹499", itemTip: "Tuck it slightly for a better silhouette.", links: { amazon: "https://amazon.in", myntra: "https://myntra.com" } },
+        { type: "Bottom", name: "Relaxed Fit Cargoes", price: "₹999", itemTip: "Go for a darker shade to keep it versatile.", links: { ajio: "https://ajio.com", flipkart: "https://flipkart.com" } },
+        { type: "Shoes", name: "Canvas High-Tops", price: "₹401", itemTip: "Clean them weekly to keep the drip fresh.", links: { meesho: "https://meesho.com" } }
       ]
     },
     {
@@ -178,27 +202,9 @@ function getFallbackOutfits(style: string, gender: string): any[] {
       imageUrl: "https://picsum.photos/seed/fallback-trendy/800/1000",
       imagePrompt: "A trendy layered look with a heavyweight boxy tee, straight leg distressed denim, and a silver chain accessory.",
       items: [
-        {
-          type: "Top",
-          name: "Heavyweight Boxy Tee",
-          price: "₹899",
-          itemTip: "Premium cotton makes the drape look expensive.",
-          links: { hm: "https://hm.com", myntra: "https://myntra.com" }
-        },
-        {
-          type: "Bottom",
-          name: "Straight Leg Distressed Denim",
-          price: "₹1,800",
-          itemTip: "Ensure the length hits right at the ankle.",
-          links: { zara: "https://zara.com", ajio: "https://ajio.com" }
-        },
-        {
-          type: "Accessories",
-          name: "Silver Chain Set",
-          price: "₹800",
-          itemTip: "Simple accessories elevate a basic fit instantly.",
-          links: { amazon: "https://amazon.in" }
-        }
+        { type: "Top", name: "Heavyweight Boxy Tee", price: "₹899", itemTip: "Premium cotton makes the drape look expensive.", links: { hm: "https://hm.com", myntra: "https://myntra.com" } },
+        { type: "Bottom", name: "Straight Leg Distressed Denim", price: "₹1,800", itemTip: "Ensure the length hits right at the ankle.", links: { zara: "https://zara.com", ajio: "https://ajio.com" } },
+        { type: "Accessories", name: "Silver Chain Set", price: "₹800", itemTip: "Simple accessories elevate a basic fit instantly.", links: { amazon: "https://amazon.in" } }
       ]
     },
     {
@@ -210,27 +216,9 @@ function getFallbackOutfits(style: string, gender: string): any[] {
       imageUrl: "https://picsum.photos/seed/fallback-premium/800/1000",
       imagePrompt: "A premium studio select fit with a knit polo, pleated trousers, and clean leather court sneakers.",
       items: [
-        {
-          type: "Top",
-          name: "Premium Knit Polo",
-          price: "₹2,500",
-          itemTip: "Texture adds depth to your overall look.",
-          links: { tataCliq: "https://tatacliq.com", zara: "https://zara.com" }
-        },
-        {
-          type: "Bottom",
-          name: "Pleated Trousers",
-          price: "₹3,000",
-          itemTip: "Tapered legs provide a modern, sharp aesthetic.",
-          links: { hm: "https://hm.com", nykaa: "https://nykaafashion.com" }
-        },
-        {
-          type: "Shoes",
-          name: "Leather Court Sneakers",
-          price: "₹2,300",
-          itemTip: "A timeless investment for any wardrobe.",
-          links: { bata: "https://bata.in", amazon: "https://amazon.in" }
-        }
+        { type: "Top", name: "Premium Knit Polo", price: "₹2,500", itemTip: "Texture adds depth to your overall look.", links: { tataCliq: "https://tatacliq.com", zara: "https://zara.com" } },
+        { type: "Bottom", name: "Pleated Trousers", price: "₹3,000", itemTip: "Tapered legs provide a modern, sharp aesthetic.", links: { hm: "https://hm.com", nykaa: "https://nykaafashion.com" } },
+        { type: "Shoes", name: "Leather Court Sneakers", price: "₹2,300", itemTip: "A timeless investment for any wardrobe.", links: { bata: "https://bata.in", amazon: "https://amazon.in" } }
       ]
     }
   ];

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -24,6 +23,7 @@ import {
 import { Sparkles, ArrowRight, Loader2, Zap } from "lucide-react";
 import { generatePersonalizedOutfitSuggestions, type GenerateOutfitOutput, type GenerateOutfitInput } from "@/ai/flows/generate-personalized-outfit-suggestions";
 import { useUser } from "@/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   name: z.string().optional().nullable(),
@@ -38,11 +38,13 @@ const formSchema = z.object({
 
 interface OutfitFormProps {
   onResults: (results: GenerateOutfitOutput, input: GenerateOutfitInput) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
 }
 
-export function OutfitForm({ onResults }: OutfitFormProps) {
-  const [loading, setLoading] = useState(false);
+export function OutfitForm({ onResults, isLoading, setIsLoading }: OutfitFormProps) {
   const { user } = useUser();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,7 +61,7 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const payload: GenerateOutfitInput = {
         ...values,
@@ -70,8 +72,13 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
       onResults(result, payload);
     } catch (error) {
       console.error("Failed to generate outfit:", error);
+      toast({
+        variant: "destructive",
+        title: "AI Engine Error",
+        description: "Failed to generate your outfit. Please try again.",
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -174,7 +181,8 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
                     <SelectItem value="Party">Party / Clubbing</SelectItem>
                     <SelectItem value="Wedding">Wedding</SelectItem>
                     <SelectItem value="Date">Date Night</SelectItem>
-                    <SelectItem value="Gym">Gym</SelectItem>
+                    <SelectItem value="Casual">Casual Day Out</SelectItem>
+                    <SelectItem value="Gym">Gym Session</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -208,10 +216,10 @@ export function OutfitForm({ onResults }: OutfitFormProps) {
         <div className="pt-6">
           <Button 
             type="submit" 
-            disabled={loading}
+            disabled={isLoading}
             className="w-full h-20 bg-primary text-background font-black hover:bg-primary/90 text-2xl gap-3 rounded-2xl gold-glow transition-all active:scale-95"
           >
-            {loading ? (
+            {isLoading ? (
               <>
                 <Loader2 className="w-8 h-8 animate-spin" />
                 COOKING YOUR DRIP... 🔥
