@@ -18,8 +18,10 @@ export function Navbar() {
    const navLinks = [
     { href: '/', label: 'HOME' },
     { href: '/generate', label: 'OUTFIT BUILDER' },
-    { href: '/analyze',label: 'MIRROR AI' },
+    { href: '/analyze',label: 'STYLE ME' },
+    { href: '/chat', label: 'AI COACH' },
     { href: '/explore', label: 'TRENDS' },
+    { href: '/wardrobe', label: 'WARDROBE' },
     { href: '/history', label: 'HISTORY' },
     { href: '/profile', label: 'PROFILE' },
   ];
