@@ -10,14 +10,14 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const StyleAnalysisInputSchema = z.object({
+const StyleAnalysisInputSchema = z.object({
   imageDataUri: z.string().describe(
     "A photo of a person, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
   ),
 });
 export type StyleAnalysisInput = z.infer<typeof StyleAnalysisInputSchema>;
 
-export const StyleAnalysisOutputSchema = z.object({
+const StyleAnalysisOutputSchema = z.object({
   styleScore: z.number().min(0).max(10).describe('An overall style score from 1 to 10.'),
   bodyType: z.string().describe('The detected body type of the person (e.g., Ectomorph, Mesomorph, Athletic).'),
   bestFit: z.string().describe('The recommended clothing fit for their body type (e.g., Slim Fit, Regular Fit).'),
