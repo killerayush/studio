@@ -49,8 +49,8 @@ const analyzeStylePrompt = ai.definePrompt({
     name: 'styleAnalyzerPrompt',
     input: { schema: StyleAnalysisInputSchema },
     output: { schema: StyleAnalysisOutputSchema },
+    model: 'googleai/gemini-pro-vision', // Use a vision-capable model
     config: {
-        model: 'googleai/gemini-pro-vision', // Use a vision-capable model
         temperature: 0.7,
     },
     prompt: `You are VYXEN AI, a world-class personal stylist with an expert eye for fashion, body types, and color theory. Analyze the person in this image.
