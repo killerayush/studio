@@ -10,16 +10,34 @@ import { z } from 'genkit';
 
 const GenerateOutfitInputSchema = z.object({
   name: z.string().nullable().optional().describe('User display name.'),
-  gender: z.enum(['Male', 'Female', 'Non-binary']).default('Male').describe('User gender preference.'),
+  gender: z.enum(['Male', 'Female', 'Non-binary']).describe('User gender preference.'),
   height: z.coerce.number().min(50).max(250).describe('User height in centimeters.'),
   weight: z.coerce.number().min(20).max(300).describe('User weight in kilograms.'),
+  
+  // Measurements
   shoeSize: z.coerce.number().optional().describe('User shoe size in EU/IN.'),
-  style: z.enum(['Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym', 'Classic / Preppy', 'Bold Prints', 'Techwear']).describe('User primary style preference.'),
+  chest: z.coerce.number().optional().describe('Chest measurement in inches.'),
+  waist: z.coerce.number().optional().describe('Waist measurement in inches.'),
+  hips: z.coerce.number().optional().describe('Hips measurement in inches.'),
+  inseam: z.coerce.number().optional().describe('Inseam measurement in inches.'),
+  
+  // Style Preferences
+  style: z.enum(['Streetwear', 'Classic / Preppy', 'Minimal', 'Desi / Ethnic', 'Bold Prints', 'Techwear']).describe('User primary style preference.'),
+  preferredTopStyles: z.array(z.string()).optional().describe('Specific types of tops preferred by user (e.g., T-Shirts, Shirts, Hoodies).'),
+  preferredFootwear: z.array(z.string()).optional().describe('Specific types of footwear preferred by user (e.g., Sneakers, Loafers).'),
+
+  // Location & Lifestyle
+  city: z.string().nullable().optional().describe('User city for weather and local trends.'),
+  climate: z.enum(['Hot', 'Moderate', 'Cold']).optional().describe('Local climate conditions.'),
+  lifestyle: z.string().optional().describe('User lifestyle.'),
+
+  // Core request
   occasion: z.string().min(1).describe('The occasion for which the outfit is needed.'),
   budgetRange: z.enum(['Under ₹1,500', 'Under ₹3,000', 'Under ₹5,000']).describe('The budget range for the entire outfit.'),
   location: z.string().default('India').describe('The user\'s location for brand context.'),
   userId: z.string().nullable().optional().describe('Authenticated user ID.'),
 });
+
 export type GenerateOutfitInput = z.infer<typeof GenerateOutfitInputSchema>;
 
 const AffiliateLinksSchema = z.object({
@@ -70,23 +88,38 @@ const outfitTextPrompt = ai.definePrompt({
   config: {
     temperature: 0.9,
   },
-  prompt: `You are VYXEN AI, a top-tier fashion consultant. Generate 3 COMPLETELY DIFFERENT outfits based on the user's profile.
+  prompt: `You are VYXEN AI, a top-tier fashion consultant. Generate 3 COMPLETELY DIFFERENT outfits based on the user's detailed profile.
 
 User Profile:
 - Name: {{{name}}}
 - Gender: {{{gender}}}
-- Dimensions: {{{height}}}cm, {{{weight}}}kg, Shoe Size: EU {{{shoeSize}}}
-- Style Preference: {{{style}}}
-- Occasion: {{{occasion}}}
-- Budget: {{{budgetRange}}}
-- Location: {{{location}}}
+- Body Measurements:
+  - Height: {{{height}}}cm
+  - Weight: {{{weight}}}kg
+  - Chest: {{{chest}}} inches
+  - Waist: {{{waist}}} inches
+  - Hips: {{{hips}}} inches
+  - Inseam: {{{inseam}}} inches
+- Shoe Size: EU {{{shoeSize}}}
+
+- Style DNA:
+  - Primary Vibe: {{{style}}}
+  - Preferred Tops: {{{preferredTopStyles}}}
+  - Preferred Footwear: {{{preferredFootwear}}}
+
+- Context:
+  - Occasion: {{{occasion}}}
+  - Budget: {{{budgetRange}}}
+  - Location: {{{city}}}, {{{location}}}
+  - Climate: {{{climate}}}
+  - Lifestyle: {{{lifestyle}}}
 
 Rules:
 - Generate 3 UNIQUE options with distinct vibes:
   - Outfit 1: A "Budget fit" - stylish but affordable.
   - Outfit 2: A "Trendy fit" - something fashionable and current.
   - Outfit 3: A "Premium fit" - a more elevated, high-quality look.
-- Do NOT repeat common, boring combinations like a plain black t-shirt and blue jeans. Be highly creative and specific.
+- Do NOT repeat common, boring combinations. Be highly creative and specific.
 - Provide realistic Indian Rupee (₹) prices for the India market.
 - For each item, provide direct shopping links for as many of these platforms as possible: amazon, myntra, ajio, flipkart, meesho, nykaa, tataCliq, hm, zara.
 - Ensure the outfits are tailored to the user's specific measurements and style preference.
