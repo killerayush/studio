@@ -63,9 +63,9 @@ export default function GeneratePage() {
         {!results ? (
           <div className="max-w-3xl mx-auto space-y-12">
             <div className="text-center space-y-4">
-              <h1 className="text-4xl md:text-6xl font-headline font-bold">Define Your Look</h1>
+              <h1 className="text-4xl md:text-6xl font-headline font-bold">Build your profile.</h1>
               <p className="text-muted-foreground text-lg">
-                Tell us about yourself, and we'll handle the styling.
+                more info = better drip
               </p>
             </div>
             <OutfitForm onResults={handleResults} setIsLoading={setIsLoading} isLoading={isLoading} />

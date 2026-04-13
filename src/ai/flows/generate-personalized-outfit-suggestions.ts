@@ -13,9 +13,10 @@ const GenerateOutfitInputSchema = z.object({
   gender: z.enum(['Male', 'Female', 'Non-binary']).default('Male').describe('User gender preference.'),
   height: z.coerce.number().min(50).max(250).describe('User height in centimeters.'),
   weight: z.coerce.number().min(20).max(300).describe('User weight in kilograms.'),
-  style: z.enum(['Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym']).describe('User primary style preference.'),
+  shoeSize: z.coerce.number().optional().describe('User shoe size in EU/IN.'),
+  style: z.enum(['Streetwear', 'Minimal', 'Desi', 'Formal', 'Gym', 'Classic / Preppy', 'Bold Prints', 'Techwear']).describe('User primary style preference.'),
   occasion: z.string().min(1).describe('The occasion for which the outfit is needed.'),
-  budgetRange: z.enum(['Under ₹1500', 'Under ₹3000', 'Under ₹5000']).describe('The budget range for the entire outfit.'),
+  budgetRange: z.enum(['Under ₹1,500', 'Under ₹3,000', 'Under ₹5,000']).describe('The budget range for the entire outfit.'),
   location: z.string().default('India').describe('The user\'s location for brand context.'),
   userId: z.string().nullable().optional().describe('Authenticated user ID.'),
 });
@@ -74,7 +75,7 @@ const outfitTextPrompt = ai.definePrompt({
 User Profile:
 - Name: {{{name}}}
 - Gender: {{{gender}}}
-- Dimensions: {{{height}}}cm, {{{weight}}}kg
+- Dimensions: {{{height}}}cm, {{{weight}}}kg, Shoe Size: EU {{{shoeSize}}}
 - Style Preference: {{{style}}}
 - Occasion: {{{occasion}}}
 - Budget: {{{budgetRange}}}
