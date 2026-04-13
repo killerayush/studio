@@ -10,6 +10,7 @@ const TrendingItemSchema = z.object({
   description: z.string().describe('A short, catchy description of why this item is trending.'),
   imageUrl: z.string().url().describe('A URL for the item\'s image.'),
   gender: z.enum(['Unisex', 'Male', 'Female']).describe('The target gender for the trend.'),
+  imageHint: z.string().optional().describe("Keywords for searching a real image."),
 });
 
 const FetchTrendingOutfitsOutputSchema = z.object({
@@ -38,7 +39,8 @@ const fetchTrendingOutfitsFlow = ai.defineFlow(
           name: 'Boxy Fit Graphic Tees',
           category: 'Tops',
           description: 'Oversized and bold, the boxy tee is the canvas for this season\'s graphic statements.',
-          imageUrl: 'https://picsum.photos/seed/trend1/800/1000',
+          imageUrl: 'https://picsum.photos/seed/boxt-tee-model/800/1000',
+          imageHint: 'graphic tee',
           gender: 'Unisex',
         },
         {
@@ -46,7 +48,8 @@ const fetchTrendingOutfitsFlow = ai.defineFlow(
           name: 'Relaxed Fit Cargo Pants',
           category: 'Bottoms',
           description: 'Utility meets comfort. The cargo pant is back with a looser, more relaxed silhouette.',
-          imageUrl: 'https://picsum.photos/seed/trend2/800/1000',
+          imageUrl: 'https://picsum.photos/seed/cargo-pants-style/800/1000',
+          imageHint: 'cargo pants',
           gender: 'Unisex',
         },
         {
@@ -54,7 +57,8 @@ const fetchTrendingOutfitsFlow = ai.defineFlow(
           name: 'Chunky Sole Sneakers',
           category: 'Footwear',
           description: 'The "dad shoe" aesthetic continues to dominate with exaggerated soles and retro designs.',
-          imageUrl: 'https://picsum.photos/seed/trend3/800/1000',
+          imageUrl: 'https://picsum.photos/seed/chunky-sneaker-feet/800/1000',
+          imageHint: 'chunky sneakers',
           gender: 'Unisex',
         },
         {
@@ -62,7 +66,8 @@ const fetchTrendingOutfitsFlow = ai.defineFlow(
             name: 'Knit Polo Shirts',
             category: 'Tops',
             description: 'A touch of vintage class, the knit polo brings texture and sophistication to casual looks.',
-            imageUrl: 'https://picsum.photos/seed/trend4/800/1000',
+            imageUrl: 'https://picsum.photos/seed/knit-polo-shirt/800/1000',
+            imageHint: 'knit polo',
             gender: 'Male',
         },
         {
@@ -70,7 +75,8 @@ const fetchTrendingOutfitsFlow = ai.defineFlow(
             name: 'Wide-Leg Tailored Trousers',
             category: 'Bottoms',
             description: 'Flowy and elegant, wide-leg trousers are replacing skinny fits for a more powerful stance.',
-            imageUrl: 'https://picsum.photos/seed/trend5/800/1000',
+            imageUrl: 'https://picsum.photos/seed/wide-trousers-fashion/800/1000',
+            imageHint: 'wide trousers',
             gender: 'Female',
         },
         {
@@ -78,7 +84,8 @@ const fetchTrendingOutfitsFlow = ai.defineFlow(
             name: 'Utility Vests',
             category: 'Outerwear',
             description: 'Layering gets functional. The utility vest adds pockets and an edgy vibe to any outfit.',
-            imageUrl: 'https://picsum.photos/seed/trend6/800/1000',
+            imageUrl: 'https://picsum.photos/seed/utility-vest-street/800/1000',
+            imageHint: 'utility vest',
             gender: 'Unisex',
         }
       ],
