@@ -21,8 +21,6 @@ export function Navbar() {
     { href: '/analyze',label: 'STYLE ME' },
     { href: '/chat', label: 'AI COACH' },
     { href: '/explore', label: 'TRENDS' },
-    { href: '/wardrobe', label: 'WARDROBE' },
-    { href: '/history', label: 'HISTORY' },
     { href: '/profile', label: 'PROFILE' },
   ];
 
