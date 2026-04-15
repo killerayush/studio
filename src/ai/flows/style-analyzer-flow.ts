@@ -72,7 +72,7 @@ Image to analyze: {{media url=imageDataUri}}
 `
 });
 
-function getFallbackAnalysis(): StyleAnalysisOutput {
+function getMaleFallbackAnalysis(): StyleAnalysisOutput {
   return {
     styleScore: 7.5,
     bodyType: 'Athletic',
@@ -99,6 +99,33 @@ function getFallbackAnalysis(): StyleAnalysisOutput {
   };
 }
 
+function getFemaleFallbackAnalysis(): StyleAnalysisOutput {
+  return {
+    styleScore: 8.0,
+    bodyType: 'Pear Shape',
+    bestFit: 'A-Line Skirts, Wide-Leg Trousers',
+    avoidFit: 'Low-rise Jeans, Clingy Tops',
+    bestColors: ['Emerald Green', 'Burgundy', 'Royal Blue'],
+    avoidColors: ['Ash Grey', 'Dull Beige'],
+    outfitFeedback: {
+      good: ['The color of your dress is lovely.', 'Flattering neckline.'],
+      improve: ['A belt could define your waist more.', 'Statement earrings would elevate this.'],
+    },
+    recommendedOutfit: [
+      { type: 'Top', description: 'Fitted Black Bodysuit' },
+      { type: 'Bottom', description: 'High-Waisted A-Line Midi Skirt' },
+      { type: 'Shoes', description: 'Heeled Ankle Boots' },
+    ],
+    clothesSuggestions: {
+      tops: ['Wrap Tops', 'Off-shoulder Blouses', 'V-neck Sweaters'],
+      bottoms: ['High-waisted Trousers', 'Flowy Skirts', 'Dark-wash Flare Jeans'],
+      shoes: ['Block Heels', 'Pointed Flats', 'Knee-high Boots'],
+      avoid: ['Tube Tops', 'Horizontal Stripes on Hips'],
+    },
+    isFallback: true,
+  };
+}
+
 const analyzeStyleFlow = ai.defineFlow(
   {
     name: 'analyzeStyleFlow',
@@ -114,7 +141,8 @@ const analyzeStyleFlow = ai.defineFlow(
         return output;
     } catch (error: any) {
         console.warn('Style analysis failed (Quota/Limit), serving fallback:', error.message);
-        return getFallbackAnalysis();
+        // Randomly return a male or female fallback to make it less static
+        return Math.random() > 0.5 ? getMaleFallbackAnalysis() : getFemaleFallbackAnalysis();
     }
   }
 );
